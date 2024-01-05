@@ -1,7 +1,9 @@
-import numpy as np
-
+import pstats
+from pstats import SortKey
+import cProfile
 from data_processing import load_and_process_data
 from plotting import setup_plots, create_animation
+
 
 # Radar parameters
 AntNum = 4  # Number of Rx Antennas
@@ -24,11 +26,11 @@ fps = 20  # Frames per Second
 datalength = fps * 60 * 5
 
 # Parameters and filename
-filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_1.csv'
+filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_17.csv'
 fps = 20
-window_size = 40
-cutoff_threshold = 2000
-update_interval = 0.0000001
+window_size = 1000
+cutoff_threshold = 1000
+update_interval = 0.0002
 
 # Load and process data
 data = load_and_process_data(filename)
@@ -39,7 +41,6 @@ data_avg = (data[0] + data[1] + data[2] + data[3]) / 4
 fig, ax1, ax2, ax3, ax4, line1, line2, line3, line4 = setup_plots()
 
 # Create and start animation
-create_animation(fig, data_avg, fps, window_size, update_interval, cutoff_threshold, line1, line2, line3, line4, ax1, ax2,
+create_animation(fig, data_avg, fps, window_size, update_interval, cutoff_threshold, line1, line2, line3, line4, ax1,
+                 ax2,
                  ax3, ax4)
-
-
