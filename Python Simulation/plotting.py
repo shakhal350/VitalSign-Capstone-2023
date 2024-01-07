@@ -9,6 +9,7 @@ global peak_frequencies, peak_magnitudes
 peak_frequencies = []
 peak_magnitudes = []
 
+
 def setup_plots():
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 12))
     line1, = ax1.plot([], [], lw=2)
@@ -36,22 +37,27 @@ def setup_plots():
     return fig, ax1, ax2, ax3, ax4, line1, line2, line3, line4
 
 
-def update_plot(frame, data, fps, window_size, cutoff_threshold, line1, line2, line3, line4, ax1, ax2, ax3, ax4,
+def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size, cutoff_threshold, line1, line2, line3, line4, ax1,
+                ax2, ax3, ax4,
                 peak_text):
-    start = max(0, frame - window_size)
-    end = frame
+    start = max(0, current_sample - sample_window_size)
+    end = current_sample
+
+    sec_per_sample = samples_per_frame * fps  # 512frames * 20fps = 10240
     min_freq_cutoff = 0.03
 
-    latest_time = end / 10000  # Time of the latest data point
-    time_data = (np.abs(data.iloc[start:end]))
-    print(f"Frame #{frame} at Time: {latest_time} seconds")
-    # print(f"Time domain Datapoints: \n{time_data}")
-    line1.set_data(np.arange(start, end), time_data)
-    ax1.set_xlim(start, end)
+    latest_time = end / sec_per_sample  # Time of the latest data point
+    time_data = np.abs(data.iloc[start:end])
+    # Calculate the time values for the x-axis
+    time_values = np.linspace(start / sec_per_sample, end / sec_per_sample, num=len(time_data))
+    print(f"Current Sample #{current_sample} at Time: {latest_time} seconds")
+    # Set the data for the line plot with time_values as x-axis and time_data as y-axis
+    line1.set_data(time_values, time_data)
+    ax1.set_xlim(start / sec_per_sample, end / sec_per_sample)
     ax1.set_ylim(np.min(time_data), np.max(time_data))
 
     # Call FFT processing functions
-    fft_freq, fft_magnitude = perform_fft(time_data, fps)
+    fft_freq, fft_magnitude = perform_fft(time_data, sec_per_sample)
     line2.set_data(fft_freq[:len(fft_magnitude) // 2],
                    fft_magnitude[:len(fft_magnitude) // 2])
     ax2.set_xlim(0, 3)
@@ -89,7 +95,6 @@ def update_plot(frame, data, fps, window_size, cutoff_threshold, line1, line2, l
     ax4.set_xlim(start, end)
     ax4.set_ylim(0, np.max(np.abs(cutoff_fft_result)))
 
-
     for freq, mag in peak_freqs_magnitudes:
         peak_frequencies.append(freq)
         peak_magnitudes.append(mag)
@@ -111,9 +116,9 @@ def plot_histogram(peak_frequencies, peak_magnitudes):
     plt.show()
 
 
-def create_animation(fig, data, fps, window_size, update_interval, cutoff_threshold, line1, line2, line3, line4, ax1,
+def create_animation(fig, data, samples_per_frame, fps, window_size, update_interval, cutoff_threshold, line1, line2,
+                     line3, line4, ax1,
                      ax2, ax3, ax4):
-
     # Create a text artist for peak annotations
     peak_text = ax3.text(0.95, 0.95, '', transform=ax3.transAxes, horizontalalignment='right', verticalalignment='top',
                          color='red')
@@ -122,9 +127,10 @@ def create_animation(fig, data, fps, window_size, update_interval, cutoff_thresh
     # print("List of frames:", frames)
 
     ani = FuncAnimation(fig,
-                        lambda frame: update_plot(frame, data, fps, window_size, cutoff_threshold, line1, line2, line3,
+                        lambda frame: update_plot(frame, data, samples_per_frame, fps, window_size, cutoff_threshold,
+                                                  line1, line2, line3,
                                                   line4, ax1, ax2, ax3, ax4, peak_text), frames=frames,
-                        blit=True,
+                        blit=False,
                         interval=update_interval * 1000)
     plt.show()
     plot_histogram(peak_frequencies, peak_magnitudes)
