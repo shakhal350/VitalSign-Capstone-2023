@@ -22,8 +22,7 @@ samples_per_frame = 512
 
 # Parameters and filename
 filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_17.csv'
-fps = 20
-window_size = 1000
+sample_window_size = 1500
 cutoff_threshold = 1000
 update_interval = 0.002
 
@@ -36,7 +35,7 @@ data_avg = (data[0] + data[1] + data[2] + data[3]) / 4
 fig, ax1, ax2, ax3, ax4, line1, line2, line3, line4 = setup_plots()
 
 # Create and start animation
-create_animation(fig, data_avg, samples_per_frame, fps, window_size, update_interval, cutoff_threshold, line1, line2,
+create_animation(fig, data_avg, samples_per_frame, fps, sample_window_size, update_interval, cutoff_threshold, line1, line2,
                  line3, line4, ax1,
                  ax2,
                  ax3, ax4)

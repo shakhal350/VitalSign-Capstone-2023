@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
-from fft_processing import perform_fft, apply_magnitude_cutoff, perform_ifft
+from fft_processing import perform_fft, apply_magnitude_cutoff
 from scipy.signal import find_peaks
 
 # Peak data to global lists
@@ -37,37 +37,36 @@ def setup_plots():
     return fig, ax1, ax2, ax3, ax4, line1, line2, line3, line4
 
 
-def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size, cutoff_threshold, line1, line2, line3, line4, ax1,
+def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size, cutoff_threshold, line1, line2, line3,
+                line4, ax1,
                 ax2, ax3, ax4,
                 peak_text):
-    start = max(0, current_sample - sample_window_size)
-    end = current_sample
+    starting_sample = max(0, current_sample - sample_window_size)
+    ending_sample = current_sample
 
-    sec_per_sample = samples_per_frame * fps  # 512frames * 20fps = 10240
+    sample_per_second = samples_per_frame * fps  # 512samples/frames * 20frames/sec = 10240 samples/frame
     min_freq_cutoff = 0.03
 
-    latest_time = end / sec_per_sample  # Time of the latest data point
-    time_data = np.abs(data.iloc[start:end])
+    latest_time = ending_sample / sample_per_second  # Time of the latest data point
+    time_data = np.abs(data.iloc[starting_sample:ending_sample])
     # Calculate the time values for the x-axis
-    time_values = np.linspace(start / sec_per_sample, end / sec_per_sample, num=len(time_data))
+    time_values = np.linspace(starting_sample / sample_per_second, ending_sample / sample_per_second, num=len(time_data))
     print(f"Current Sample #{current_sample} at Time: {latest_time} seconds")
     # Set the data for the line plot with time_values as x-axis and time_data as y-axis
     line1.set_data(time_values, time_data)
-    ax1.set_xlim(start / sec_per_sample, end / sec_per_sample)
+    ax1.set_xlim(starting_sample / sample_per_second, ending_sample / sample_per_second)
     ax1.set_ylim(np.min(time_data), np.max(time_data))
 
     # Call FFT processing functions
-    fft_freq, fft_magnitude = perform_fft(time_data, sec_per_sample)
-    line2.set_data(fft_freq[:len(fft_magnitude) // 2],
-                   fft_magnitude[:len(fft_magnitude) // 2])
-    ax2.set_xlim(0, 3)
+    fft_freq, fft_magnitude = perform_fft(time_data, 1)
+    line2.set_data(fft_freq[:len(fft_magnitude) // 2], fft_magnitude[:len(fft_magnitude) // 2])
+    ax2.set_xlim(0, max(fft_freq))
     ax2.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))  # ignoring first 0.03Hz
 
     fft_magnitude_cutoff = apply_magnitude_cutoff(
         fft_magnitude, cutoff_threshold)
-    line3.set_data(fft_freq[:len(fft_magnitude_cutoff) // 2],
-                   fft_magnitude_cutoff[:len(fft_magnitude_cutoff) // 2])
-    ax3.set_xlim(0, 3)
+    line3.set_data(fft_freq[:len(fft_magnitude_cutoff) // 2], fft_magnitude_cutoff[:len(fft_magnitude_cutoff) // 2])
+    ax3.set_xlim(0, max(fft_freq))
     ax3.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))
 
     # Filter out frequencies below min_freq_cutoff Hz
@@ -78,10 +77,6 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     # Find peaks in the positive side of the cutoff FFT
     peaks, _ = find_peaks(fft_magnitude_cutoff_positive)
 
-    # Adjust peak indices to account for the filtered range and calculate BPM
-    peak_freqs = fft_freq[peaks + min_freq_index]
-    peak_bpm = peak_freqs * 60  # Convert frequencies to BPM
-
     # Pair peak frequencies with their magnitudes and sort by magnitude (descending)
     peak_freqs_magnitudes = [(fft_freq[peak + min_freq_index], fft_magnitude_cutoff_positive[peak]) for peak in peaks]
     peak_freqs_magnitudes.sort(key=lambda x: x[1], reverse=True)
@@ -90,9 +85,9 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     peak_freq_bpm_text = '\n'.join(f"{freq:.2f} Hz = {freq * 60:.2f} BPM" for freq, mag in peak_freqs_magnitudes)
     peak_text.set_text(peak_freq_bpm_text)
 
-    cutoff_fft_result = perform_ifft(fft_magnitude_cutoff)
-    line4.set_data(np.arange(start, end), np.abs(cutoff_fft_result))
-    ax4.set_xlim(start, end)
+    cutoff_fft_result = np.fft.ifft(fft_magnitude)
+    line4.set_data(time_values, np.abs(cutoff_fft_result))
+    ax4.set_xlim(starting_sample / sample_per_second, ending_sample / sample_per_second)
     ax4.set_ylim(0, np.max(np.abs(cutoff_fft_result)))
 
     for freq, mag in peak_freqs_magnitudes:

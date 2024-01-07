@@ -12,7 +12,3 @@ def apply_magnitude_cutoff(fft_magnitude, cutoff_threshold):
     fft_magnitude_cutoff = fft_magnitude.copy()
     fft_magnitude_cutoff[fft_magnitude < cutoff_threshold] = 0
     return fft_magnitude_cutoff
-
-
-def perform_ifft(fft_magnitude):
-    return np.fft.ifft(fft_magnitude)
