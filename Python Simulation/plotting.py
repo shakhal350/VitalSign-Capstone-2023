@@ -58,7 +58,7 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     ax1.set_ylim(np.min(time_data), np.max(time_data))
 
     # Call FFT processing functions
-    fft_freq, fft_magnitude = perform_fft(time_data, 1)
+    fft_freq, fft_magnitude = perform_fft(time_data, fps)
     line2.set_data(fft_freq[:len(fft_magnitude) // 2], fft_magnitude[:len(fft_magnitude) // 2])
     ax2.set_xlim(0, max(fft_freq))
     ax2.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))  # ignoring first 0.03Hz
