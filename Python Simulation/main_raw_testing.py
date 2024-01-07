@@ -1,6 +1,3 @@
-import pstats
-from pstats import SortKey
-import cProfile
 from data_processing import load_and_process_data
 from plotting import setup_plots, create_animation
 
@@ -22,7 +19,7 @@ samples_per_frame = 512
 
 # Parameters and filename
 filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_17.csv'
-sample_window_size = 1500
+sample_window_size = 10240
 cutoff_threshold = 1000
 update_interval = 0.002
 

@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 import numpy as np
-from fft_processing import perform_fft, apply_magnitude_cutoff
+from matplotlib.animation import FuncAnimation
 from scipy.signal import find_peaks
+
+from fft_processing import perform_fft, apply_magnitude_cutoff
 
 # Peak data to global lists
 global peak_frequencies, peak_magnitudes
@@ -44,13 +45,14 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     starting_sample = max(0, current_sample - sample_window_size)
     ending_sample = current_sample
 
-    sample_per_second = samples_per_frame * fps  # 512samples/frames * 20frames/sec = 10240 samples/frame
+    sample_per_second = samples_per_frame * fps  # 512samples/frames * 20frames/sec = 10240 samples/sec
     min_freq_cutoff = 0.03
 
     latest_time = ending_sample / sample_per_second  # Time of the latest data point
     time_data = np.abs(data.iloc[starting_sample:ending_sample])
     # Calculate the time values for the x-axis
-    time_values = np.linspace(starting_sample / sample_per_second, ending_sample / sample_per_second, num=len(time_data))
+    time_values = np.linspace(starting_sample / sample_per_second, ending_sample / sample_per_second,
+                              num=len(time_data))
     print(f"Current Sample #{current_sample} at Time: {latest_time} seconds")
     # Set the data for the line plot with time_values as x-axis and time_data as y-axis
     line1.set_data(time_values, time_data)
