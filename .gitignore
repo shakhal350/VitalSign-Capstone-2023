@@ -1,0 +1,31 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# .gitignore
+
+# Ignore all .log files
+*.log
+
+# Ignore all .tmp files
+*.tmp
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore dist directory
+dist/
+
+# Ignore .env files
+.env
+
+# Ignore git_toolbox_prj.xml in config directory
+config/git_toolbox_prj.xml
+
+# Ignore .idea directory
+.idea/
+
+# Ignore Python Simulation/animation_profile
+Python Simulation/animation_profile
+
+# Ignore .pyc files
+*.pyc

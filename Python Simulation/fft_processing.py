@@ -1,5 +1,5 @@
 import numpy as np
-
+import scipy
 
 
 def perform_fft(time_data, fps):
@@ -20,6 +20,13 @@ def perform_fft(time_data, fps):
 
 
 def apply_magnitude_cutoff(fft_magnitude, cutoff_threshold):
+    """
+    :param fft_magnitude: Magnitude of the fast fourier transform
+    :param cutoff_threshold: Magnitude chosen for the cutoff TODO: Needs to be dynamic, currently 1000
+
+    :return fft_magnitude_cutoff: Magnitude of the cutoff version of the fft
+    """
+
     fft_magnitude_cutoff = fft_magnitude.copy()
     fft_magnitude_cutoff[fft_magnitude < cutoff_threshold] = 0
     return fft_magnitude_cutoff

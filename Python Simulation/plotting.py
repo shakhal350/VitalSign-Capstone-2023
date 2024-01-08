@@ -12,7 +12,7 @@ peak_magnitudes = []
 
 
 def setup_plots():
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 12))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 8))
     line1, = ax1.plot([], [], lw=2)
     line2, = ax2.plot([], [], lw=2)
     line3, = ax3.plot([], [], lw=2)
@@ -62,13 +62,13 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     # Call FFT processing functions
     fft_freq, fft_magnitude = perform_fft(time_data, fps)
     line2.set_data(fft_freq[:len(fft_magnitude) // 2], fft_magnitude[:len(fft_magnitude) // 2])
-    ax2.set_xlim(0, max(fft_freq))
+    ax2.set_xlim(0, 3)
     ax2.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))  # ignoring first 0.03Hz
 
     fft_magnitude_cutoff = apply_magnitude_cutoff(
         fft_magnitude, cutoff_threshold)
     line3.set_data(fft_freq[:len(fft_magnitude_cutoff) // 2], fft_magnitude_cutoff[:len(fft_magnitude_cutoff) // 2])
-    ax3.set_xlim(0, max(fft_freq))
+    ax3.set_xlim(0, 3)
     ax3.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))
 
     # Filter out frequencies below min_freq_cutoff Hz
