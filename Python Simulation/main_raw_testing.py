@@ -22,12 +22,10 @@ RangeBin = (c * samplerate) / (2 * freqslope * FFTSize)  # Range Resoluion of Ra
 # Parameters and filename
 # filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_1.csv'
 # sample_window_size = 10240
-# cutoff_threshold = 1000
 # update_interval = 1
 
 filename = r'C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\mmWave-VitalSign (Dataset Github)\RobustVSDataset_anonymous\p1\fix\2m\periodical\radar_csv\radar_01.csv'
 sample_window_size = 200
-cutoff_threshold = 50
 update_interval = 1
 
 # Load and process data
@@ -39,7 +37,7 @@ print(data)
 fig, ax1, ax2, ax3, ax4, line1, line2, line3, line4 = setup_plots()
 
 # Create and start animation
-create_animation(fig, data, samples_per_frame, fps, sample_window_size, update_interval, cutoff_threshold, line1,
+create_animation(fig, data, samples_per_frame, fps, sample_window_size, update_interval, line1,
                  line2,
                  line3, line4, ax1,
                  ax2,

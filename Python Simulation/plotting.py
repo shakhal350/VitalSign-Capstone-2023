@@ -38,12 +38,13 @@ def setup_plots():
     return fig, ax1, ax2, ax3, ax4, line1, line2, line3, line4
 
 
-def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size, cutoff_threshold, line1, line2, line3,
+def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, line3,
                 line4, ax1,
                 ax2, ax3, ax4,
                 peak_text):
     starting_sample = max(0, current_sample - sample_window_size)
     ending_sample = current_sample
+
 
     sample_per_second = samples_per_frame * fps  # 512samples/frames * 20frames/sec = 10240 samples/sec
     min_freq_cutoff = 0.03
@@ -62,13 +63,14 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     # Call FFT processing functions
     fft_freq, fft_magnitude = perform_fft(time_data, fps)
     line2.set_data(fft_freq[:len(fft_magnitude) // 2], fft_magnitude[:len(fft_magnitude) // 2])
-    ax2.set_xlim(0, 3)
+    ax2.set_xlim(0, max(fft_freq))
     ax2.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))  # ignoring first 0.03Hz
 
+    cutoff_threshold = 0.075 * np.max(fft_magnitude)
     fft_magnitude_cutoff = apply_magnitude_cutoff(
         fft_magnitude, cutoff_threshold)
     line3.set_data(fft_freq[:len(fft_magnitude_cutoff) // 2], fft_magnitude_cutoff[:len(fft_magnitude_cutoff) // 2])
-    ax3.set_xlim(0, 3)
+    ax3.set_xlim(0, max(fft_freq))
     ax3.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))
 
     # Filter out frequencies below min_freq_cutoff Hz
