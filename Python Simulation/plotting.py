@@ -69,9 +69,7 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     starting_sample = max(0, current_sample - sample_window_size)
     ending_sample = current_sample
 
-    # If the remaining data is less than the window size, adjust the starting_sample
-    if len(data) - current_sample < sample_window_size:
-        starting_sample = len(data) - sample_window_size
+    print(f"len(data): {len(data)}, current_sample: {current_sample}, sample_window_size: {sample_window_size}")
 
     # Ex: 512samples/frames * 20frames/sec = 10240 samples/sec
     sample_per_second = samples_per_frame * fps
@@ -79,6 +77,26 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
 
     latest_time = ending_sample / sample_per_second  # Time of the latest data point
     time_data = np.abs(data.iloc[starting_sample:ending_sample])
+
+    # Adjust ending_sample for the last frame to include all remaining data
+    ending_sample = min(current_sample + sample_window_size, len(data))
+
+    # Calculate the number of samples in the current window
+    num_samples_in_window = ending_sample - starting_sample
+
+    # If the remaining data is smaller than the sample window size, pad with zeros
+    if num_samples_in_window < sample_window_size:
+        # Calculate the number of samples to pad
+        num_samples_to_pad = sample_window_size - num_samples_in_window
+
+        # Pad the time_data with zeros
+        time_data = np.concatenate((time_data, np.zeros(num_samples_to_pad)))
+
+    # Correct the time_values to reflect the actual timestamps
+    time_values = np.linspace(starting_sample / sample_per_second,
+                              (starting_sample + num_samples_in_window) / sample_per_second,
+                              num=num_samples_in_window)
+
     # Calculate the time values for the x-axis
     time_values = np.linspace(starting_sample / sample_per_second,
                               ending_sample / sample_per_second, num=len(time_data))
