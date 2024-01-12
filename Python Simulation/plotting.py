@@ -115,7 +115,7 @@ def plot_histogram(peak_frequencies, peak_magnitudes):
     plt.show()
 
 
-def create_animation(fig, data, samples_per_frame, fps, window_size, update_interval, cutoff_threshold, line1, line2,
+def create_animation(fig, data, samples_per_frame, fps, window_size, update_interval, line1, line2,
                      line3, line4, ax1,
                      ax2, ax3, ax4):
     # Create a text artist for peak annotations
@@ -126,7 +126,7 @@ def create_animation(fig, data, samples_per_frame, fps, window_size, update_inte
     # print("List of frames:", frames)
 
     ani = FuncAnimation(fig,
-                        lambda frame: update_plot(frame, data, samples_per_frame, fps, window_size, cutoff_threshold,
+                        lambda frame: update_plot(frame, data, samples_per_frame, fps, window_size,
                                                   line1, line2, line3,
                                                   line4, ax1, ax2, ax3, ax4, peak_text), frames=frames,
                         blit=False,
