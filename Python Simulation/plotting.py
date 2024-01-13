@@ -73,10 +73,10 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
 
     # Ex: 512samples/frames * 20frames/sec = 10240 samples/sec
     sample_per_second = samples_per_frame * fps
-    min_freq_cutoff = 0.03  # for cancelling self interference
+    min_freq_cutoff = 0.05  # for cancelling self interference  TODO: make this into a more dynamic variable or method***
 
     latest_time = ending_sample / sample_per_second  # Time of the latest data point
-    time_data = np.abs(data.iloc[starting_sample:ending_sample])
+    time_data = np.abs(data[starting_sample:ending_sample])
 
     # Adjust ending_sample for the last frame to include all remaining data
     ending_sample = min(current_sample + sample_window_size, len(data))
@@ -113,11 +113,11 @@ def update_plot(current_sample, data, samples_per_frame, fps, sample_window_size
     line2.set_data(fft_freq[:len(fft_magnitude) // 2],
                    fft_magnitude[:len(fft_magnitude) // 2])
     ax2.set_xlim(0, max(fft_freq))
-    # ignoring first 0.03Hz
+    # ignoring first 0.05Hz
     ax2.set_ylim(
         0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))
 
-    cutoff_threshold = 0.075 * np.max(fft_magnitude)
+    cutoff_threshold = 1000
     fft_magnitude_cutoff = apply_magnitude_cutoff(
         fft_magnitude, cutoff_threshold)
     line3.set_data(fft_freq[:len(fft_magnitude_cutoff) // 2],
@@ -183,7 +183,7 @@ def create_animation(fig, data, samples_per_frame, fps, window_size, update_inte
 
     ani = FuncAnimation(fig,
                         lambda frame: update_plot(frame, data, samples_per_frame, fps, window_size, line1, line2, line3,
-                                                  line4, ax1, ax2, ax3, ax4, peak_text), frames=frames, blit=False,
+                                                  line4, ax1, ax2, ax3, ax4, peak_text), frames=frames, blit=True,
                         interval=update_interval * 1000, repeat=False)
     plt.show()
     plot_histogram(peak_frequencies, peak_magnitudes)
