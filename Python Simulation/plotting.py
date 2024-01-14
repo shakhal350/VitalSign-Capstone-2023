@@ -171,6 +171,7 @@ def create_animation(data, samples_per_frame, fps, window_size, update_interval)
     peak_text = ax2.text(0.95, 0.95, '', transform=ax2.transAxes,
                          horizontalalignment='right', verticalalignment='top', color='red')
     frames = np.arange(window_size, len(data), window_size)
+
     ani1 = FuncAnimation(fig,
                          lambda frame: plot_time_fft(frame, data, samples_per_frame, fps, window_size, line1, line2,
                                                      ax1, ax2, peak_text), frames=frames, blit=False,
