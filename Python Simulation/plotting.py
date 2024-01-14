@@ -11,21 +11,37 @@ peak_frequencies = []
 peak_magnitudes = []
 
 
-def setup_plots_time_fft():
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
-    line1, = ax1.plot([], [], lw=2)
-    line2, = ax2.plot([], [], lw=2)
+def setup_plots(plotnumber):
+    if plotnumber == 1:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+        line1, = ax1.plot([], [], lw=2)
+        line2, = ax2.plot([], [], lw=2)
 
-    ax1.set_title('Magnitude of Signal Over Time')
-    ax1.set_xlabel('Time')
-    ax1.set_ylabel('Magnitude')
+        ax1.set_title('Magnitude of Signal Over Time')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Magnitude')
 
-    ax2.set_title('FFT of Signal')
-    ax2.set_xlabel('Frequency (Hz)')
-    ax2.set_ylabel('Magnitude')
+        ax2.set_title('FFT of Signal')
+        ax2.set_xlabel('Frequency (Hz)')
+        ax2.set_ylabel('Magnitude')
 
-    plt.tight_layout()
-    return fig, ax1, ax2, line1, line2
+        plt.tight_layout()
+        return fig, ax1, ax2, line1, line2
+    elif plotnumber == 2:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+        line1, = ax1.plot([], [], lw=2)
+        line2, = ax2.plot([], [], lw=2)
+
+        ax1.set_title('Filtered Breathing Rate FFT')
+        ax1.set_xlabel('Frequency (Hz)')
+        ax1.set_ylabel('Magnitude')
+
+        ax2.set_title('Filtered Heart Rate FFT')
+        ax2.set_xlabel('Frequency (Hz)')
+        ax2.set_ylabel('Magnitude')
+
+        plt.tight_layout()
+        return fig, ax1, ax2, line1, line2
 
 
 def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, ax1,
@@ -77,11 +93,6 @@ def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_si
         # Pad the time_data with zeros
         time_data = np.concatenate((time_data, np.zeros(num_samples_to_pad)))
 
-    # Correct the time_values to reflect the actual timestamps
-    time_values = np.linspace(starting_sample / sample_per_second,
-                              (starting_sample + num_samples_in_window) / sample_per_second,
-                              num=num_samples_in_window)
-
     # Calculate the time values for the x-axis
     time_values = np.linspace(starting_sample / sample_per_second,
                               ending_sample / sample_per_second, num=len(time_data))
@@ -132,7 +143,6 @@ def plot_filtered_fft(current_sample, data, samples_per_frame, fps, sample_windo
     starting_sample = max(0, current_sample - sample_window_size)
     ending_sample = current_sample
 
-    print(f"len(data): {len(data)}, current_sample: {current_sample}, sample_window_size: {sample_window_size}")
     # TODO: Write code to filter the data using IIR filter
 
     return line1, line2, peak_text
@@ -154,25 +164,26 @@ def plot_filtered_fft(current_sample, data, samples_per_frame, fps, sample_windo
 #     plt.show()
 
 
-def create_animation(fig, data, samples_per_frame, fps, window_size, update_interval, line1, line2, ax1,
-                     ax2):
+def create_animation(data, samples_per_frame, fps, window_size, update_interval):
+    fig, ax1, ax2, line1, line2 = setup_plots(1)
+
     # Create a text artist for peak annotations
     peak_text = ax2.text(0.95, 0.95, '', transform=ax2.transAxes,
                          horizontalalignment='right', verticalalignment='top', color='red')
-
     frames = np.arange(window_size, len(data), window_size)
-    # print("List of frames:", frames)
+    ani1 = FuncAnimation(fig,
+                         lambda frame: plot_time_fft(frame, data, samples_per_frame, fps, window_size, line1, line2,
+                                                     ax1, ax2, peak_text), frames=frames, blit=False,
+                         interval=update_interval * 1000, repeat=False)
 
-    ani = FuncAnimation(fig,
-                        lambda frame: plot_time_fft(frame, data, samples_per_frame, fps, window_size, line1, line2,
-                                                    ax1, ax2, peak_text), frames=frames, blit=False,
-                        interval=update_interval * 1000, repeat=False)
-    # plot_histogram(peak_frequencies, peak_magnitudes)
     plt.show()
+
+    fig, ax1, ax2, line1, line2 = setup_plots(2)
     ani2 = FuncAnimation(fig,
                          lambda frame: plot_filtered_fft(frame, data, samples_per_frame, fps, window_size,
-                                                         line1,
-                                                         line1, ax1, ax2, peak_text), frames=frames, blit=True,
+                                                         line1, line2, ax1, ax2, peak_text), frames=frames,
+                         blit=True,
                          interval=update_interval * 1000, repeat=False)
     plt.show()
-    # plot_histogram(peak_frequencies, peak_magnitudes)
+
+# plot_histogram(peak_frequencies, peak_magnitudes)
