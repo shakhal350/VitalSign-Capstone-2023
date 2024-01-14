@@ -2,7 +2,7 @@ import numpy as np
 
 from SVD_processing import SVD_Matrix, reduce_noise
 from data_processing import load_and_process_data
-from plotting import setup_plots_time_fft, create_animation
+from plotting import create_animation
 
 # Parameters and filename
 filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_11.csv'
@@ -21,13 +21,7 @@ print(radar_parameters["samplesPerFrame"], radar_parameters["frameRate"])
 SVD_U, SVD_s, SVD_Vh = SVD_Matrix(np.abs(data), radar_parameters)
 data = reduce_noise(SVD_U, SVD_s, SVD_Vh, num_components=5)
 
-# Setup plots
-fig, ax1, ax2, line1, line2 = setup_plots_time_fft()
-
 # Create and start animation
-create_animation(fig, data, radar_parameters["samplesPerFrame"], radar_parameters["frameRate"], sample_window_size,
-                 update_interval, line1,
-                 line2,
-                 ax1,
-                 ax2,
+create_animation(data, radar_parameters["samplesPerFrame"], radar_parameters["frameRate"], sample_window_size,
+                 update_interval,
                  )
