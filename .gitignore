@@ -32,3 +32,6 @@ Python Simulation/animation_profile
 Python Simulation/__pycache__/data_processing.cpython-311.pyc
 Python Simulation/__pycache__/fft_processing.cpython-311.pyc
 Python Simulation/__pycache__/plotting.cpython-311.pyc
+
+# Ignore .vscode directory
+/.vscode/
