@@ -67,53 +67,48 @@ def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_si
     line2 (matplotlib.lines.Line2D): The updated line object for the FFT plot.
     peak_text (matplotlib.text.Text): The updated text object for the peak frequencies.
     """
-    starting_sample = max(0, current_sample - sample_window_size)
+    starting_sample = abs(current_sample - sample_window_size)
     ending_sample = current_sample
 
     print(f"len(data): {len(data)}, current_sample: {current_sample}, sample_window_size: {sample_window_size}")
 
     # Ex: 512samples/frames * 20frames/sec = 10240 samples/sec
     sample_per_second = samples_per_frame * fps
-    min_freq_cutoff = 0.05  # for cancelling self interference  TODO: make this into a more dynamic variable or method***
 
     latest_time = ending_sample / sample_per_second  # Time of the latest data point
     time_data = (data[starting_sample:ending_sample])
+    if current_sample + sample_window_size > len(data):
+        # Adjust ending_sample for the last frame to include all remaining data
+        ending_sample = min(current_sample + sample_window_size, len(data))
 
-    # Adjust ending_sample for the last frame to include all remaining data
-    ending_sample = min(current_sample + sample_window_size, len(data))
+        # Calculate the number of samples in the current window
+        num_samples_in_window = ending_sample - starting_sample
 
-    # Calculate the number of samples in the current window
-    num_samples_in_window = ending_sample - starting_sample
+        # If the remaining data is smaller than the sample window size, pad with zeros
+        if num_samples_in_window < sample_window_size:
+            # Calculate the number of samples to pad
+            num_samples_to_pad = sample_window_size - num_samples_in_window
 
-    # If the remaining data is smaller than the sample window size, pad with zeros
-    if num_samples_in_window < sample_window_size:
-        # Calculate the number of samples to pad
-        num_samples_to_pad = sample_window_size - num_samples_in_window
-
-        # Pad the time_data with zeros
-        time_data = np.concatenate((time_data, np.zeros(num_samples_to_pad)))
+            # Pad the time_data with zeros
+            time_data = np.concatenate((time_data, np.zeros(num_samples_to_pad)))
 
     # Calculate the time values for the x-axis
-    time_values = np.linspace(starting_sample / sample_per_second,
-                              ending_sample / sample_per_second, num=len(time_data))
+    time_values = np.linspace(starting_sample / sample_per_second, ending_sample / sample_per_second, num=len(time_data))
     print(f"Current Sample #{current_sample} at Time: {latest_time} seconds")
 
     # Set the data for the line plot with time_values as x-axis and time_data as y-axis
     line1.set_data(time_values, time_data)
-    ax1.set_xlim(starting_sample / sample_per_second,
-                 ending_sample / sample_per_second)
+    ax1.set_xlim(starting_sample / sample_per_second, ending_sample / sample_per_second)
     ax1.set_ylim(np.min(time_data), np.max(time_data))
 
     # Call FFT processing functions
     fft_freq, fft_magnitude = perform_fft(time_data, fps)
-    line2.set_data(fft_freq[:len(fft_magnitude) // 2],
-                   fft_magnitude[:len(fft_magnitude) // 2])
+    line2.set_data(fft_freq[:len(fft_magnitude) // 2], fft_magnitude[:len(fft_magnitude) // 2])
     ax2.set_xlim(0, max(fft_freq))
-    # ignoring first 0.05Hz
-    ax2.set_ylim(
-        0, np.max(fft_magnitude[np.argmax(fft_freq >= min_freq_cutoff):]))
+    ax2.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq):]))
 
     peaks, _ = find_peaks(fft_magnitude, height=0, distance=2)
+
     # min_freq_index = np.argmax(fft_freq >= min_freq_cutoff)
     #
     # # Pair peak frequencies with their magnitudes and sort by magnitude (descending)
@@ -133,9 +128,7 @@ def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_si
     return line1, line2, peak_text
 
 
-def plot_filtered_fft(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, ax1,
-                      ax2,
-                      peak_text):
+def plot_filtered_fft(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, ax1, ax2, peak_text):
     # create a function that takes in the current sample and plots the filtered fft using IIR filter to bandpass heart rate and breathing rate
     breathing_rate_range = [0.1, 0.5]  # Hz
     heart_rate_range = [0.8, 2]  # Hz
