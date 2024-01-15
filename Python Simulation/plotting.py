@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation
 from scipy.signal import find_peaks
 
 from fft_processing import perform_fft
+from filter_processing import butter_bandpass_filter
 
 # Peak data to global lists
 global peak_frequencies, peak_magnitudes
@@ -48,7 +49,7 @@ def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_si
                   ax2,
                   peak_text):
     """
-    Update the plot with the latest data.
+    Update the plot with the latest data in time domain and frequency domain.
 
     Parameters:
     current_sample (int): The index of the current sample.
@@ -137,6 +138,27 @@ def plot_filtered_fft(current_sample, data, samples_per_frame, fps, sample_windo
     ending_sample = current_sample
 
     # TODO: Write code to filter the data using IIR filter
+    # Extract the segment of data we're going to filter and FFT
+    data_segment = data[starting_sample:ending_sample]
+
+    # Apply bandpass filters
+    breathing_filtered = butter_bandpass_filter(data_segment, breathing_rate_range[0], breathing_rate_range[1], fps, order=5)
+    heart_filtered = butter_bandpass_filter(data_segment, heart_rate_range[0], heart_rate_range[1], fps, order=5)
+
+    # Compute the FFT and frequencies
+    breathing_fft = np.abs(np.fft.rfft(breathing_filtered))
+    heart_fft = np.abs(np.fft.rfft(heart_filtered))
+    freqs = np.fft.rfftfreq(len(data_segment), 1.0 / fps)
+
+    # Update the line objects for the plot
+    line1.set_data(freqs, breathing_fft)
+    line2.set_data(freqs, heart_fft)
+
+    # Update the axes using the line data
+    ax1.set_xlim(breathing_rate_range[0], breathing_rate_range[1])
+    ax1.set_ylim(0, np.max(breathing_fft))
+    ax2.set_xlim(heart_rate_range[0], heart_rate_range[1])
+    ax2.set_ylim(0, np.max(heart_fft))
 
     return line1, line2, peak_text
 
