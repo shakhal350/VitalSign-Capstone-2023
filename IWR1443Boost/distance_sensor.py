@@ -34,7 +34,7 @@ def serialConfig(configFileName):
     #Dataport = serial.Serial('/dev/ttyACM1', 921600)
     
     # Windows
-    CLIport = serial.Serial('COM5', 115200)
+    CLIport = serial.Serial('COM4', 115200)
     Dataport = serial.Serial('COM6', 921600)
 
     # Read the configuration file and send it to the board
@@ -131,6 +131,7 @@ def readAndParseData14xx(Dataport, configParameters):
     detObj = {}
     
     readBuffer = Dataport.read(Dataport.in_waiting) # read buffer into readBuffer from serial data port
+
     byteVec = np.frombuffer(readBuffer, dtype = 'uint8') # store read data from buffer in var byteVec
     byteCount = len(byteVec)
     

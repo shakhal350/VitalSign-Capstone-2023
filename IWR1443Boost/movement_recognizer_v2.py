@@ -22,7 +22,7 @@ from threading import Thread
 
 # Change the configuration file name
 # configFileName = './scripts_python/IWR1443-Read-Data-Python-MMWAVE-SDK-1-master/IWR1443-Read-Data-Python-MMWAVE-SDK-1-master/1443config.cfg'
-configFileName = './profile.cfg'
+configFileName = 'profile.cfg'
 
 CLIport = {}
 Dataport = {}
@@ -58,7 +58,7 @@ def serialConfig(configFileName):
     #Dataport = serial.Serial('/dev/ttyACM1', 921600)
     
     # Windows
-    CLIport = serial.Serial('COM5', 115200)
+    CLIport = serial.Serial('COM4', 115200)
     Dataport = serial.Serial('COM6', 921600)
 
     # Read the configuration file and send it to the board

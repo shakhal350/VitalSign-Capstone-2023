@@ -21,7 +21,7 @@ from threading import Thread
 #     fxn()
 
 # Change the configuration file name
-configFileName = './profile.cfg'
+configFileName = 'profile.cfg'
 
 CLIport = {}
 Dataport = {}
@@ -57,7 +57,7 @@ def serialConfig(configFileName):
     #Dataport = serial.Serial('/dev/ttyACM1', 921600)
     
     # Windows
-    CLIport = serial.Serial('COM5', 115200)
+    CLIport = serial.Serial('COM4', 115200)
     Dataport = serial.Serial('COM6', 921600)
 
     # Read the configuration file and send it to the board
