@@ -13,7 +13,7 @@ peak_magnitudes = []
 
 def setup_plots(plotnumber):
     if plotnumber == 1:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 3))
         line1, = ax1.plot([], [], lw=2)
         line2, = ax2.plot([], [], lw=2)
 
@@ -28,7 +28,7 @@ def setup_plots(plotnumber):
         plt.tight_layout()
         return fig, ax1, ax2, line1, line2
     elif plotnumber == 2:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 3))
         line1, = ax1.plot([], [], lw=2)
         line2, = ax2.plot([], [], lw=2)
 
