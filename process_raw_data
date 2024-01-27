@@ -1,0 +1,35 @@
+import numpy as np
+import pandas as pd
+
+
+def readDCA1000(fileName, csvFileName):
+    # Configuration parameters
+    numADCBits = 16  # number of ADC bits per sample
+    numLanes = 4     # number of lanes is always 4
+    isReal = 0       # set to 1 if real only data, 0 if complex data
+
+    # Read .bin file
+    with open(fileName, 'rb') as f:
+        adcData = np.fromfile(f, dtype=np.int16)
+
+    # Compensate for sign extension if ADC bits are not 16
+    if numADCBits != 16:
+        l_max = 2**(numADCBits - 1) - 1
+        adcData[adcData > l_max] -= 2**numADCBits
+
+    # Organize data by LVDS lane
+    if isReal:
+        # Reshape data based on one sample per LVDS lane for real only data
+        adcData = np.reshape(adcData, (numLanes, -1))
+    else:
+        # Reshape and combine real and imaginary parts for complex data
+        adcData = np.reshape(adcData, (numLanes * 2, -1))
+        adcData = adcData[:numLanes, :] + 1j * adcData[numLanes:, :]
+
+    # Convert to DataFrame and save to CSV
+    df = pd.DataFrame(adcData.T)  # Transpose to have lanes as columns
+    df.to_csv(csvFileName, index=False)
+    # return adcData
+
+
+readDCA1000("adc_data.bin", "output.csv") # Enter file path
