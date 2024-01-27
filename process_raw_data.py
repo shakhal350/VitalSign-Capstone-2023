@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
 
+
 def complex_formatter(x):
     if isinstance(x, complex):
         return f"{x.real}+{x.imag}j" if x.imag >= 0 else f"{x.real}{x.imag}j"
     return x
+
 
 def readDCA1000(fileName, csvFileName):
     # Configuration parameters
@@ -27,16 +29,19 @@ def readDCA1000(fileName, csvFileName):
         adcData = np.reshape(adcData, (numLanes, -1))
     else:
         # Reshape and combine real and imaginary parts for complex data
-        adcData = np.reshape(adcData, (numLanes * 2, -1))
-        adcData = adcData[:numLanes, :] + 1j * adcData[numLanes:, :]
+        adcData = np.reshape(adcData, (-1, numLanes*2))
+        adcData = adcData[:, :numLanes] + 1j * adcData[:, numLanes:]
 
     # Convert to DataFrame and save to CSV
-    df = pd.DataFrame(adcData.T)  # Transpose to have lanes as columns 
+    # No need to transpose, as we've already arranged the array correctly
+    df = pd.DataFrame(adcData)
     # Format each cell in DataFrame using the complex_formatter function
     formatted_df = df.applymap(complex_formatter)
+
     # Save the formatted DataFrame to CSV without index
     formatted_df.to_csv(csvFileName, index=False)
-    # return adcData
+
+    return adcData
 
 
-readDCA1000("adc_data.bin", "output.csv") # Enter file path
+readDCA1000("adc_data.bin","output.csv") # Enter file path
