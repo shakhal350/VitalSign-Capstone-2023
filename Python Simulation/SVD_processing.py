@@ -41,8 +41,9 @@ def SVD_Matrix(data_matrix, radar_parameters):
     U, s, Vh = np.linalg.svd(data_matrix, full_matrices=False)
 
     print(f"U.shape: {U.shape}, s.shape: {s.shape}, Vh.shape: {Vh.shape}")
+    noise_reduced_data = reduce_noise(U, s, Vh, 10)
 
-    return U, s, Vh
+    return noise_reduced_data
 
 
 def reduce_noise(SVD_U, SVD_s, SVD_Vh, num_components):
@@ -65,6 +66,7 @@ def reduce_noise(SVD_U, SVD_s, SVD_Vh, num_components):
 
     # Reconstruct the data matrix
     data_reduced = np.dot(U_reduced, np.dot(S, Vh_reduced))
+
     data_reduced_1D = data_reduced.flatten()
 
     return data_reduced_1D

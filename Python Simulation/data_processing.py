@@ -8,7 +8,8 @@ def load_and_process_data(filename):
         for col in data.columns:
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
         data_avg = data[0] + data[1] + data[2] + data[3] / 4  # Average all 4 Rx Antennas
-        return data_avg, get_radar_parameters("Children Dataset")
+
+        return data[0], get_radar_parameters("Children Dataset")
 
     # For VitalSign Dataset from Github
     if 'mmWave-VitalSign' in filename:
@@ -36,7 +37,7 @@ def get_radar_parameters(dataset_name):
             "frameRate": 20,  # Frame rate in frames per second
             "samplesPerFrame": 512,  # Number of samples per frame
             "FFTSize": 2 ** 10,  # Size of FFT
-            "rangeBin": (c * 3e6) / (2 * 40.8450012207031251e12 * 2 ** 10),  # Range bin in meters
+            "rangeBin": int(((3e6 * c) / (2 * 40.8450012207031251e12)) / (c / (2 * 3.746303561822511e9)))  # Range bins
         }
     elif dataset_name == "Github Dataset":
         r_para = {
