@@ -41,7 +41,7 @@ def SVD_Matrix(data_matrix, radar_parameters):
     U, s, Vh = np.linalg.svd(data_matrix, full_matrices=False)
 
     print(f"U.shape: {U.shape}, s.shape: {s.shape}, Vh.shape: {Vh.shape}")
-    noise_reduced_data = reduce_noise(U, s, Vh, 10)
+    noise_reduced_data = reduce_noise(U, s, Vh, 5)
 
     return noise_reduced_data
 

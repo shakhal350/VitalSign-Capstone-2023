@@ -9,7 +9,13 @@ def load_and_process_data(filename):
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
         data_avg = data[0] + data[1] + data[2] + data[3] / 4  # Average all 4 Rx Antennas
 
-        return data[0], get_radar_parameters("Children Dataset")
+        # decimation_factor = 4
+        #
+        # decimated_data = decimate(data_avg, decimation_factor, ftype='fir')
+        #
+        # decimated_data
+
+        return data_avg, get_radar_parameters("Children Dataset")
 
     # For VitalSign Dataset from Github
     if 'mmWave-VitalSign' in filename:
