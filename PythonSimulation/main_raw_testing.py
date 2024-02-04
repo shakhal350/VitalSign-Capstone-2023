@@ -5,7 +5,7 @@ from data_processing import load_and_process_data
 from plotting import create_animation
 
 # Parameters and filename
-filename = r'/Users/liampereira/Documents/Code/VitalSign-Capstone-2023/PythonSimulation/Transposed_Rawdata_11.csv'
+filename = r'C:\Users\Johnny Tcharfajian\Desktop\VitalSign-Capstone-2023\PythonSimulation\Transposed_Rawdata_11.csv'
 
 sample_window_size = 40960
 update_interval = 2
@@ -22,6 +22,6 @@ SVD_U, SVD_s, SVD_Vh = SVD_Matrix(np.abs(data), radar_parameters)
 data = reduce_noise(SVD_U, SVD_s, SVD_Vh, num_components=5)
 
 # # Create and start animation
-# create_animation(data, radar_parameters["samplesPerFrame"], radar_parameters["frameRate"], sample_window_size,
-#                  update_interval,
-#                  )
+create_animation(data, radar_parameters["samplesPerFrame"], radar_parameters["frameRate"], sample_window_size,
+                  update_interval,
+                  )
