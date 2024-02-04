@@ -5,7 +5,7 @@ from scipy.signal import find_peaks
 
 def find_significant_peaks(fft_magnitude, fft_freqs, width):
     # Detect peaks
-    peaks, _ = find_peaks(fft_magnitude, distance=100)
+    peaks, _ = find_peaks(fft_magnitude, distance=10, prominence=0.1, width=1, height=0.1, threshold=0.1)
     # Initialize list to store areas
     peak_areas = []
 

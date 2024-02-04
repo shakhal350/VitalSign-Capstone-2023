@@ -5,19 +5,17 @@ from plotting import create_animation
 # Parameters and filename
 # filename = r'C:\Users\Shaya\Downloads\DCA1000EVM_shayan.csv'
 # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
-filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_11.csv'
+filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_8.csv'
 # filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
 
 # Load and process data
 data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 
-animation_update_interval = 1
+animation_update_interval = 0.01
 
 data_Re = SVD_Matrix(data_Re, radar_parameters)
 data_Im = SVD_Matrix(data_Im, radar_parameters)
 
-print(f"data_Re, after SVD_Matrix: {data_Re[:10]}")
-print(f"data_Im, after SVD_Matrix: {data_Im[:10]}")
 
 # Create and start animation
-create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=10)
+create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=1)

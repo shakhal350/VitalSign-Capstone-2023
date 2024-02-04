@@ -6,6 +6,11 @@ from filter_processing import butter_bandpass_filter, apply_high_pass_filter
 from peak_processing import find_significant_peaks, reconstruct_signal_from_peaks
 
 phase_history = []
+accumulated_breathing_signal = []
+accumulated_heart_signal = []
+
+average_breathing_rate = []
+average_heart_rate = []
 
 
 def setup_plots(plotnumber):
@@ -114,7 +119,7 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     sample_per_second = radar_parameters["samplesPerSecond"]
     # create a function that takes in the current sample and plots the filtered fft using IIR filter to bandpass heart rate and breathing rate
     breathing_rate_range = [0.1, 0.8]  # Hz = 60*0.1 to 60*0.7 = 6 to 48 breaths per minute
-    heart_rate_range = [0.8, 2]  # Hz = 60*0.8 to 60*2 = 48 to 120 beats per minute
+    heart_rate_range = [0.9, 2]  # Hz = 60*0.9 to 60*2 = 54 to 120 beats per minute
 
     starting_sample = max(0, current_sample - sample_window_size)
     ending_sample = min(current_sample, len(data))
@@ -135,12 +140,11 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     line1.set_data(freqs, breathing_fft)
     line2.set_data(freqs, heart_fft)
     # only pick the beat frequency of the peaks found in the filtered fft for breathing and heart rate
-    peak_index_breathing = find_significant_peaks(breathing_fft, freqs, width=100)
-    peak_index_heart = find_significant_peaks(heart_fft, freqs, width=100)
+    peak_index_breathing = find_significant_peaks(breathing_fft, freqs, width=10)
+    peak_index_heart = find_significant_peaks(heart_fft, freqs, width=10)
 
     starting_time = starting_sample / sample_per_second
     latest_time = ending_sample / sample_per_second
-    time_values = np.linspace(starting_time, latest_time, num=len(time_data))
     ############################################################################################################
     ############################################ Breathing Rate ################################################
     ############################################################################################################
@@ -148,9 +152,13 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
         peak_indices = [idx for idx, _ in peak_index_breathing[:5]]
         print(f"Five Strongest peaks for Breathing = {freqs[peak_indices[:5]]} Hz = ", freqs[peak_indices[:5]] * 60, " breaths per minute")
         breathing_time = reconstruct_signal_from_peaks(breathing_fft, peak_indices, freqs, len(time_data))
-        line3.set_data(time_values, breathing_time)
-        ax3.set_xlim(starting_time, latest_time)
-        ax3.set_ylim(breathing_time.min(), breathing_time.max())
+        # Append the new breathing time data to the accumulated data
+        accumulated_breathing_signal.extend(breathing_time)
+        # Ensure that time_values and accumulated_breathing_signal have the same shape
+        time_values = np.linspace(0, latest_time, num=len(accumulated_breathing_signal))
+        line3.set_data(time_values, accumulated_breathing_signal)
+        ax3.set_xlim(0, latest_time)
+        ax3.set_ylim(min(accumulated_breathing_signal), max(accumulated_breathing_signal))
     else:
         print("No significant breathing peaks found.")
     ############################################################################################################
@@ -160,9 +168,11 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
         peak_indices = [idx for idx, _ in peak_index_heart[:5]]
         print(f"Five Strongest peak for Heart = {freqs[peak_indices[:5]]} Hz = ", freqs[peak_indices[:5]] * 60, " beats per minute")
         heart_time = reconstruct_signal_from_peaks(heart_fft, peak_indices, freqs, len(time_data))
-        line4.set_data(time_values, heart_time)
-        ax4.set_xlim(starting_time, latest_time)
-        ax4.set_ylim(heart_time.min(), heart_time.max())
+        accumulated_heart_signal.extend(heart_time)
+        time_values = np.linspace(0, latest_time, num=len(accumulated_heart_signal))
+        line4.set_data(time_values, accumulated_heart_signal)
+        ax4.set_xlim(0, latest_time)
+        ax4.set_ylim(min(accumulated_heart_signal), max(accumulated_heart_signal))
     else:
         print("No significant heart peaks found.")
 
@@ -171,6 +181,20 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     ax1.set_ylim(0, np.max(breathing_fft))
     ax2.set_xlim(heart_rate_range[0], heart_rate_range[1])
     ax2.set_ylim(0, np.max(heart_fft))
+
+    # average out the peak frequency to get the breathing rate and heart rate
+    for idx, _ in peak_index_breathing[:5]:
+        average_breathing_rate.append(freqs[idx])
+    for idx, _ in peak_index_heart[:5]:
+        average_heart_rate.append(freqs[idx])
+
+    print(f"=========================================(AVERAGE)===================================================")
+    print(f"Average Breathing Rate: {np.median(average_breathing_rate) * 60} breaths per minute")
+    print(f"Average Heart Rate: {np.median(average_heart_rate) * 60} beats per minute")
+    print(f"=====================================================================================================")
+
+    # CREATE A FUNCTION WHICH SENDS LINE1, LINE2, LINE3, LINE4, AX1, AX2, AX3, AX4 TO ANOTHER GUI WINDOW
+    # send_to_gui(line1, line2, line3, line4, ax1, ax2, ax3, ax4)
 
     return line1, line2, line3, line4
 
@@ -188,7 +212,7 @@ def create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWi
 
     ani1 = FuncAnimation(fig,
                          lambda frame: plot_range_fft(frame, data, radar_parameters, window_size, line1, line2,
-                                                      ax1, ax2), frames=frames, blit=False,
+                                                      ax1, ax2), frames=frames, blit=True,
                          interval=update_interval * 1000, repeat=False)
 
     plt.show()
@@ -197,7 +221,7 @@ def create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWi
     ani2 = FuncAnimation(fig,
                          lambda frame: plot_filtered_fft(frame, data, radar_parameters, window_size,
                                                          line1, line2, line3, line4, ax1, ax2, ax3, ax4), frames=frames,
-                         blit=False,
+                         blit=True,
                          interval=update_interval * 1000, repeat=False)
     plt.show()
 
