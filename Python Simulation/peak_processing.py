@@ -4,12 +4,8 @@ from scipy.signal import find_peaks
 
 
 def find_significant_peaks(fft_magnitude, fft_freqs, width):
-    # print(f"fft_freqs[256] = 0.1 Hz: {fft_freqs[256]}")
-    start_index = 256  # Starting index for slicing
-    end_index = len(fft_magnitude) // 2  # End index for slicing, assuming you're working with a one-sided spectrum
     # Detect peaks
-    peaks, _ = find_peaks(fft_magnitude[start_index:end_index], distance=100)
-    # print(f"freq_resolution: {freq_resolution}")
+    peaks, _ = find_peaks(fft_magnitude, distance=100)
     # Initialize list to store areas
     peak_areas = []
 
@@ -29,31 +25,16 @@ def find_significant_peaks(fft_magnitude, fft_freqs, width):
     return significant_peaks
 
 
-def ifft_from_peaks(beat_frequencies, magnitudes, signal_length):
-    """
-    Reconstructs a time-domain signal from given frequencies and their magnitudes using IFFT.
+def reconstruct_signal_from_peaks(fft_array, peak_indices, freqs, n_points):
+    # Create a frequency domain representation with zeros
+    fft_reconstructed = np.zeros(len(freqs), dtype=np.complex128)
+    print(f"freqs[peak_indices]: {peak_indices}")
+    # Set the magnitudes at the peak indices
+    for idx in peak_indices:
+        fft_reconstructed[idx] = fft_array[idx]
 
-    Parameters:
-    - beat_frequencies: Array of beat frequencies (indices or actual frequencies)
-    - magnitudes: Array of magnitudes corresponding to beat frequencies
-    - signal_length: The length of the time-domain signal to reconstruct
+    fft_reconstructed[peak_indices] = fft_array[peak_indices]
 
-    Returns:
-    - Time-domain signal reconstructed from the specified frequencies and magnitudes
-    """
-    # Create a complex array for frequency spectrum, initialized with zeros
-    freq_spectrum = np.zeros(signal_length, dtype=np.complex128)
-
-    # Assuming beat_frequencies are indices, directly use them to set the magnitudes
-    for freq, mag in zip(beat_frequencies, magnitudes):
-        freq_spectrum[freq] = mag
-
-        # Add the symmetric counterpart for negative frequencies
-        if freq != 0:  # Avoid duplicating the DC component
-            freq_spectrum[-freq] = mag
-
-    # Perform the IFFT
-    time_domain_signal = np.fft.ifft(freq_spectrum)
-
-    # Return the real part of the reconstructed signal
-    return np.real(time_domain_signal)
+    # Inverse FFT to get the time-domain signal
+    reconstructed_signal = np.fft.ifft(fft_reconstructed[peak_indices], n_points)
+    return reconstructed_signal
