@@ -44,4 +44,6 @@ def readDCA1000(fileName, csvFileName):
     return adcData
 
 
-readDCA1000("adc_data.bin", "output.csv")  # Enter file path
+# Example usage:
+readDCA1000(r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\BinFiles(RawData)\shayan_stopped_breathing.bin",
+            r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_stopped_breathing.csv")

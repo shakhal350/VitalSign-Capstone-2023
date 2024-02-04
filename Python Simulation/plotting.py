@@ -1,36 +1,35 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
-from scipy.signal import find_peaks
 
-from fft_processing import perform_fft
+from filter_processing import butter_bandpass_filter, apply_high_pass_filter
+from peak_processing import find_significant_peaks, reconstruct_signal_from_peaks
 
-# Peak data to global lists
-global peak_frequencies, peak_magnitudes
-peak_frequencies = []
-peak_magnitudes = []
+phase_history = []
 
 
 def setup_plots(plotnumber):
     if plotnumber == 1:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
-        line1, = ax1.plot([], [], lw=2)
-        line2, = ax2.plot([], [], lw=2)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10))
+        line1, = ax1.plot([], [], lw=0.5)
+        line2, = ax2.plot([], [], lw=1)
 
         ax1.set_title('Magnitude of Signal Over Time')
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Magnitude')
 
         ax2.set_title('FFT of Signal')
-        ax2.set_xlabel('Frequency (Hz)')
+        ax2.set_xlabel('Freq (Hz)')
         ax2.set_ylabel('Magnitude')
 
         plt.tight_layout()
         return fig, ax1, ax2, line1, line2
     elif plotnumber == 2:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 8))
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 10))
         line1, = ax1.plot([], [], lw=2)
         line2, = ax2.plot([], [], lw=2)
+        line3, = ax3.plot([], [], lw=2)
+        line4, = ax4.plot([], [], lw=2)
 
         ax1.set_title('Filtered Breathing Rate FFT')
         ax1.set_xlabel('Frequency (Hz)')
@@ -40,144 +39,168 @@ def setup_plots(plotnumber):
         ax2.set_xlabel('Frequency (Hz)')
         ax2.set_ylabel('Magnitude')
 
+        ax3.set_title('Time domain Breathing Rate')
+        ax3.set_xlabel('Time (s)')
+        ax3.set_ylabel('Magnitude')
+
+        ax4.set_title('Time domain Heart Rate')
+        ax4.set_xlabel('Time (s)')
+        ax4.set_ylabel('Magnitude')
+
         plt.tight_layout()
-        return fig, ax1, ax2, line1, line2
+        return fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4
 
 
-def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, ax1,
-                  ax2,
-                  peak_text):
-    """
-    Update the plot with the latest data.
-
-    Parameters:
-    current_sample (int): The index of the current sample.
-    data (pandas.DataFrame): The data to be plotted.
-    samples_per_frame (int): The number of samples per frame.
-    fps (int): The frames per second.
-    sample_window_size (int): The size of the sample window.
-    line1 (matplotlib.lines.Line2D): The line object for the time plot.
-    line2 (matplotlib.lines.Line2D): The line object for the FFT plot.
-    ax1 (matplotlib.axes.Axes): The axes object for the time plot.
-    ax2 (matplotlib.axes.Axes): The axes object for the FFT plot.
-    peak_text (matplotlib.text.Text): The text object for the peak frequencies.
-
-    Returns:
-    line1 (matplotlib.lines.Line2D): The updated line object for the time plot.
-    line2 (matplotlib.lines.Line2D): The updated line object for the FFT plot.
-    peak_text (matplotlib.text.Text): The updated text object for the peak frequencies.
-    """
-    starting_sample = abs(current_sample - sample_window_size)
-    ending_sample = current_sample
-
-    print(f"len(data): {len(data)}, current_sample: {current_sample}, sample_window_size: {sample_window_size}")
-
-    # Ex: 512samples/frames * 20frames/sec = 10240 samples/sec
-    sample_per_second = samples_per_frame * fps
-
-    latest_time = ending_sample / sample_per_second  # Time of the latest data point
-    time_data = (data[starting_sample:ending_sample])
-    if current_sample + sample_window_size > len(data):
-        # Adjust ending_sample for the last frame to include all remaining data
-        ending_sample = min(current_sample + sample_window_size, len(data))
-
-        # Calculate the number of samples in the current window
-        num_samples_in_window = ending_sample - starting_sample
-
-        # If the remaining data is smaller than the sample window size, pad with zeros
-        if num_samples_in_window < sample_window_size:
-            # Calculate the number of samples to pad
-            num_samples_to_pad = sample_window_size - num_samples_in_window
-
-            # Pad the time_data with zeros
-            time_data = np.concatenate((time_data, np.zeros(num_samples_to_pad)))
-
-    # Calculate the time values for the x-axis
-    time_values = np.linspace(starting_sample / sample_per_second, ending_sample / sample_per_second, num=len(time_data))
-    print(f"Current Sample #{current_sample} at Time: {latest_time} seconds")
-
-    # Set the data for the line plot with time_values as x-axis and time_data as y-axis
-    line1.set_data(time_values, time_data)
-    ax1.set_xlim(starting_sample / sample_per_second, ending_sample / sample_per_second)
-    ax1.set_ylim(np.min(time_data), np.max(time_data))
-
-    # Call FFT processing functions
-    fft_freq, fft_magnitude = perform_fft(time_data, fps)
-    line2.set_data(fft_freq[:len(fft_magnitude) // 2], fft_magnitude[:len(fft_magnitude) // 2])
-    ax2.set_xlim(0, max(fft_freq))
-    ax2.set_ylim(0, np.max(fft_magnitude[np.argmax(fft_freq):]))
-
-    peaks, _ = find_peaks(fft_magnitude, height=0, distance=2)
-
-    # min_freq_index = np.argmax(fft_freq >= min_freq_cutoff)
-    #
-    # # Pair peak frequencies with their magnitudes and sort by magnitude (descending)
-    # peak_freqs_magnitudes = [(fft_freq[peak + min_freq_index],
-    #                           fft_magnitude[peak]) for peak in peaks]
-    # peak_freqs_magnitudes.sort(key=lambda x: x[1], reverse=True)
-
-    # Convert frequencies to BPM and create annotation text
-    # peak_freq_bpm_text = '\n'.join(
-    #     f"{freq:.2f} Hz = {freq * 60:.2f} BPM" for freq, mag in peak_freqs_magnitudes)
-    # peak_text.set_text(peak_freq_bpm_text)
-    #
-    # for freq, mag in peak_freqs_magnitudes:
-    #     peak_frequencies.append(freq)
-    #     peak_magnitudes.append(mag)
-
-    return line1, line2, peak_text
-
-
-def plot_filtered_fft(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, ax1, ax2, peak_text):
-    # create a function that takes in the current sample and plots the filtered fft using IIR filter to bandpass heart rate and breathing rate
-    breathing_rate_range = [0.1, 0.5]  # Hz
-    heart_rate_range = [0.8, 2]  # Hz
+def plot_range_fft(current_sample, data, radar_parameters, sample_window_size, line1, line2, ax1, ax2):
+    sample_per_second = radar_parameters["samplesPerSecond"]
+    samplingRate = radar_parameters["sampleRate"]
+    range_max = radar_parameters["rangeMax"]
+    range_bins = radar_parameters["NumOfRangeBins"]
+    range_res = radar_parameters["rangeResol"]
+    fps = radar_parameters["frameRate"]
+    Bandwidth = radar_parameters["bandwidth"]
+    chirp_length = radar_parameters["chirpTime"]
+    freqSlope = radar_parameters["freqSlope"]
+    c = 3e8
 
     starting_sample = max(0, current_sample - sample_window_size)
-    ending_sample = current_sample
+    ending_sample = min(current_sample, len(data))
 
-    # TODO: Write code to filter the data using IIR filter
+    # Data windowing
+    time_data = data[starting_sample:ending_sample]
 
-    return line1, line2, peak_text
+    # Perform FFT
+    fft_complex = np.fft.fft(time_data)
+    fft_normalized = fft_complex / np.max(np.abs(fft_complex))  # Normalizing by the max magnitude
+    fft_half_length = len(fft_normalized) // 2
+    # fft_half_length = len(fft_normalized)
+    fft_magnitude = np.abs(fft_normalized[:fft_half_length])  # Get magnitude spectrum for the first half
+    fft_freqs = np.fft.fftfreq(len(time_data), 1 / fps)[:fft_half_length]
+    # frequency_resolution = Sampling Rate / Number of Samples of FFT
+
+    # Find the peak in the FFT
+    peak_index = find_significant_peaks(fft_magnitude, fft_freqs, width=100)
+
+    if len(peak_index) > 0:
+        peak_index = peak_index[0][0]
+        peak_Hz = fft_freqs[peak_index]
+        # convert to meters
+        distance = (peak_Hz * c) / (2 * freqSlope)
+        print(f"Peak Frequency: {peak_Hz} Hz = {distance} meters")
+    else:
+        print("peak_index is empty")
+        # handle the error appropriately
+
+    starting_time = starting_sample / sample_per_second  # Time of the first data point
+    latest_time = ending_sample / sample_per_second  # Time of the latest data point
+
+    # Calculate the time values for the x-axis
+    time_values = np.linspace(starting_time, latest_time, num=len(time_data))
+
+    line1.set_data(time_values, time_data)
+    ax1.set_xlim(starting_time, latest_time)
+    ax1.set_ylim(np.min(time_data), np.max(time_data))
+
+    # Set the data for the plot
+    line2.set_data(fft_freqs, fft_magnitude)
+    ax2.set_xlim(-fps / 2, fps / 2)
+    ax2.set_ylim(0, np.max(fft_magnitude[1:fft_half_length]))
+
+    return line1, line2
 
 
-# def plot_histogram(peak_frequencies, peak_magnitudes):
-#     # Convert frequencies to heart rates in BPM
-#     heart_rates = [freq * 60 for freq in peak_frequencies]
-#     if len(heart_rates) == 0:
-#         print("No peaks found")
-#         return
-#     # Create a histogram of heart rates weighted by their magnitudes
-#     plt.figure()
-#     plt.hist(heart_rates, weights=peak_magnitudes, bins=range(
-#         int(min(heart_rates)), int(max(heart_rates)) + 1, 1))
-#     plt.title('Histogram of Heart Rates')
-#     plt.xlabel('Heart Rate (BPM)')
-#     plt.ylabel('Cumulative Magnitude')
-#     plt.show()
+def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size, line1, line2, line3, line4, ax1, ax2, ax3, ax4):
+    fps = radar_parameters["frameRate"]
+    sample_per_second = radar_parameters["samplesPerSecond"]
+    # create a function that takes in the current sample and plots the filtered fft using IIR filter to bandpass heart rate and breathing rate
+    breathing_rate_range = [0.1, 0.8]  # Hz = 60*0.1 to 60*0.7 = 6 to 48 breaths per minute
+    heart_rate_range = [0.8, 2]  # Hz = 60*0.8 to 60*2 = 48 to 120 beats per minute
+
+    starting_sample = max(0, current_sample - sample_window_size)
+    ending_sample = min(current_sample, len(data))
+
+    # Data windowing
+    time_data = data[starting_sample:ending_sample]
+
+    # Apply bandpass filters
+    breathing_filtered = butter_bandpass_filter(time_data, breathing_rate_range[0], breathing_rate_range[1], fps, order=5)
+    heart_filtered = butter_bandpass_filter(time_data, heart_rate_range[0], heart_rate_range[1], fps, order=5)
+
+    # Compute the FFT of magnitude of the filtered data
+    breathing_fft = np.abs(np.fft.rfft(breathing_filtered))
+    heart_fft = np.abs(np.fft.rfft(heart_filtered))
+    freqs = np.fft.rfftfreq(len(time_data), 1.0 / fps)
+
+    # Update the line objects for the plot
+    line1.set_data(freqs, breathing_fft)
+    line2.set_data(freqs, heart_fft)
+    # only pick the beat frequency of the peaks found in the filtered fft for breathing and heart rate
+    peak_index_breathing = find_significant_peaks(breathing_fft, freqs, width=100)
+    peak_index_heart = find_significant_peaks(heart_fft, freqs, width=100)
+
+    starting_time = starting_sample / sample_per_second
+    latest_time = ending_sample / sample_per_second
+    time_values = np.linspace(starting_time, latest_time, num=len(time_data))
+    ############################################################################################################
+    ############################################ Breathing Rate ################################################
+    ############################################################################################################
+    if len(peak_index_breathing) > 0:
+        peak_indices = [idx for idx, _ in peak_index_breathing[:5]]
+        print(f"Five Strongest peaks for Breathing = {freqs[peak_indices[:5]]} Hz = ", freqs[peak_indices[:5]] * 60, " breaths per minute")
+        breathing_time = reconstruct_signal_from_peaks(breathing_fft, peak_indices, freqs, len(time_data))
+        line3.set_data(time_values, breathing_time)
+        ax3.set_xlim(starting_time, latest_time)
+        ax3.set_ylim(breathing_time.min(), breathing_time.max())
+    else:
+        print("No significant breathing peaks found.")
+    ############################################################################################################
+    ############################################ Heart Rate ####################################################
+    ############################################################################################################
+    if len(peak_index_heart) > 0:
+        peak_indices = [idx for idx, _ in peak_index_heart[:5]]
+        print(f"Five Strongest peak for Heart = {freqs[peak_indices[:5]]} Hz = ", freqs[peak_indices[:5]] * 60, " beats per minute")
+        heart_time = reconstruct_signal_from_peaks(heart_fft, peak_indices, freqs, len(time_data))
+        line4.set_data(time_values, heart_time)
+        ax4.set_xlim(starting_time, latest_time)
+        ax4.set_ylim(heart_time.min(), heart_time.max())
+    else:
+        print("No significant heart peaks found.")
+
+    # Update the axes using the line data
+    ax1.set_xlim(breathing_rate_range[0], breathing_rate_range[1])
+    ax1.set_ylim(0, np.max(breathing_fft))
+    ax2.set_xlim(heart_rate_range[0], heart_rate_range[1])
+    ax2.set_ylim(0, np.max(heart_fft))
+
+    return line1, line2, line3, line4
 
 
-def create_animation(data, samples_per_frame, fps, window_size, update_interval):
+def create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
     fig, ax1, ax2, line1, line2 = setup_plots(1)
+    window_size = int(radar_parameters["samplesPerFrame"] * radar_parameters["frameRate"] * timeWindowMultiplier)
+    print(f"Window Size: {window_size}")
 
-    # Create a text artist for peak annotations
-    peak_text = ax2.text(0.95, 0.95, '', transform=ax2.transAxes,
-                         horizontalalignment='right', verticalalignment='top', color='red')
-    frames = np.arange(window_size, len(data), window_size)
+    data_Re_filtered = apply_high_pass_filter(data_Re, 0.1, radar_parameters["frameRate"])
+    data_Im_filtered = apply_high_pass_filter(data_Im, 0.1, radar_parameters["frameRate"])
+
+    data = data_Re_filtered + 1j * data_Im_filtered
+    frames = np.arange(window_size, len(data_Re), window_size)
 
     ani1 = FuncAnimation(fig,
-                         lambda frame: plot_time_fft(frame, data, samples_per_frame, fps, window_size, line1, line2,
-                                                     ax1, ax2, peak_text), frames=frames, blit=False,
+                         lambda frame: plot_range_fft(frame, data, radar_parameters, window_size, line1, line2,
+                                                      ax1, ax2), frames=frames, blit=False,
                          interval=update_interval * 1000, repeat=False)
 
     plt.show()
 
-    fig, ax1, ax2, line1, line2 = setup_plots(2)
+    fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4 = setup_plots(2)
     ani2 = FuncAnimation(fig,
-                         lambda frame: plot_filtered_fft(frame, data, samples_per_frame, fps, window_size,
-                                                         line1, line2, ax1, ax2, peak_text), frames=frames,
-                         blit=True,
+                         lambda frame: plot_filtered_fft(frame, data, radar_parameters, window_size,
+                                                         line1, line2, line3, line4, ax1, ax2, ax3, ax4), frames=frames,
+                         blit=False,
                          interval=update_interval * 1000, repeat=False)
     plt.show()
 
-# plot_histogram(peak_frequencies, peak_magnitudes)
+    newFig, (newAx1, newAx2) = plt.subplots(2, 1)
+    newAx1.plot(np.arange(len(phase_history)), phase_history)
+    plt.show()

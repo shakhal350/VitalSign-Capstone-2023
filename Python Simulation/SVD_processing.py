@@ -14,7 +14,7 @@ def SVD_Matrix(data_matrix, radar_parameters):
     Vh (numpy.ndarray): The right singular vectors (conjugate transposed).
     """
     # Ensure radar_values is an array with the correct number of elements
-    radar_values = np.array(data_matrix)  # data_matrix should be an array-like structure with radar values
+    radar_values = np.array(data_matrix, dtype=float)  # data_matrix should be an array-like structure with radar values
 
     # Radar parameters (assuming they're passed correctly and include N)
     N = radar_parameters['samplesPerFrame']
@@ -41,8 +41,9 @@ def SVD_Matrix(data_matrix, radar_parameters):
     U, s, Vh = np.linalg.svd(data_matrix, full_matrices=False)
 
     print(f"U.shape: {U.shape}, s.shape: {s.shape}, Vh.shape: {Vh.shape}")
+    noise_reduced_data = reduce_noise(U, s, Vh, 2)
 
-    return U, s, Vh
+    return noise_reduced_data
 
 
 def reduce_noise(SVD_U, SVD_s, SVD_Vh, num_components):
@@ -65,6 +66,7 @@ def reduce_noise(SVD_U, SVD_s, SVD_Vh, num_components):
 
     # Reconstruct the data matrix
     data_reduced = np.dot(U_reduced, np.dot(S, Vh_reduced))
+
     data_reduced_1D = data_reduced.flatten()
 
     return data_reduced_1D
