@@ -6,8 +6,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
-    <option name="format" value="EPYTEXT" />
-    <option name="myDocStringFormat" value="Epytext" />
+    <option name="format" value="PLAIN" />
+    <option name="myDocStringFormat" value="Plain" />
   </component>
   <component name="SonarLintModuleSettings">
     <option name="uniqueId" value="d0ce5df1-8121-4bd9-a254-a66690cc5ac8" />
