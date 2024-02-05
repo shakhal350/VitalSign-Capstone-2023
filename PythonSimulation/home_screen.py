@@ -1,19 +1,19 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import CENTER
-import time
-from PIL import ImageTk, Image
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import plotting
-import pandas as pd
 import csv
+import tkinter as tk
+from tkinter import CENTER
+from tkinter import ttk
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+import plotting
+
 
 def SplashScreen():
     splash_root = tk.Tk()
     splash_root.geometry("300x300")
 
-    splash_background_image = tk.PhotoImage(file="background_splash.png")
-    splash_label = ttk.Label(splash_root, text="Welcome", font=56, image=splash_background_image)
+    # splash_background_image = tk.PhotoImage(file="background_splash.png")
+    splash_label = ttk.Label(splash_root, text="Welcome", font=56)
     splash_label.place(relx=0.5, rely=0.5, anchor=CENTER)
     splash_label.pack()
     return splash_root
@@ -168,6 +168,27 @@ class VitalSignsGUI:
 
 
 if __name__ == "__main__":
+    from SVD_processing import SVD_Matrix
+    from data_processing import load_and_process_data
+    from plotting import create_animation
+
+    # Parameters and filename
+    # filename = r'C:\Users\Shaya\Downloads\DCA1000EVM_shayan.csv'
+    # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
+    filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_11.csv'
+    # filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
+
+    # Load and process data
+    data_Re, data_Im, radar_parameters = load_and_process_data(filename)
+
+    animation_update_interval = 1
+
+    data_Re = SVD_Matrix(data_Re, radar_parameters)
+    data_Im = SVD_Matrix(data_Im, radar_parameters)
+
+    # Create and start animation
+    create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
+
     splash = SplashScreen()
     root = tk.Tk()
     app = VitalSignsGUI(root, splash)

@@ -9,6 +9,7 @@ phase_history = []
 accumulated_breathing_signal = []
 accumulated_heart_signal = []
 
+
 def setup_plots(plotnumber):
     if plotnumber == 1:
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10))
@@ -165,11 +166,11 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
         ax4.set_ylim(min(accumulated_heart_signal), max(accumulated_heart_signal))
     else:
         print("No significant heart peaks found.")
-
+    extra_gap = 0.3
     # Update the axes using the line data
-    ax1.set_xlim(breathing_rate_range[0], breathing_rate_range[1])
+    ax1.set_xlim(0, breathing_rate_range[1] + extra_gap)
     ax1.set_ylim(0, np.max(breathing_fft))
-    ax2.set_xlim(heart_rate_range[0], heart_rate_range[1])
+    ax2.set_xlim(heart_rate_range[0] - extra_gap, heart_rate_range[1] + extra_gap)
     ax2.set_ylim(0, np.max(heart_fft))
 
     return line1, line2, line3, line4
