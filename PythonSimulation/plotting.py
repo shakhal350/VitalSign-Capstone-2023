@@ -21,13 +21,30 @@ def setup_plots(plotnumber):
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Magnitude')
 
-        ax2.set_title('FFT of Signal')
+        ax2.set_title('SVD on Signal')
+        ax2.set_xlabel('Time')
+        ax2.set_ylabel('Magnitude')
+
+        plt.tight_layout()
+        return fig, ax1, ax2, line1, line2
+
+    if plotnumber == 2:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 3))
+        line1, = ax1.plot([], [], lw=2)
+        line2, = ax2.plot([], [], lw=2)
+
+        ax1.set_title('High Pass Filter on Signal')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Magnitude')
+
+        ax2.set_title('FFT on Signal')
         ax2.set_xlabel('Frequency (Hz)')
         ax2.set_ylabel('Magnitude')
 
         plt.tight_layout()
         return fig, ax1, ax2, line1, line2
-    elif plotnumber == 2:
+
+    elif plotnumber == 3:
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 3))
         line1, = ax1.plot([], [], lw=2)
         line2, = ax2.plot([], [], lw=2)
@@ -43,6 +60,21 @@ def setup_plots(plotnumber):
         plt.tight_layout()
         return fig, ax1, ax2, line1, line2
 
+    elif plotnumber == 4:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 3))
+        line1, = ax1.plot([], [], lw=2)
+        line2, = ax2.plot([], [], lw=2)
+
+        ax1.set_title('Final Breathing Rate')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Magnitude')
+
+        ax2.set_title('Final Heart Rate')
+        ax2.set_xlabel('Time')
+        ax2.set_ylabel('Magnitude')
+
+        plt.tight_layout()
+        return fig, ax1, ax2, line1, line2
 
 def plot_time_fft(current_sample, data, samples_per_frame, fps, sample_window_size, line1, line2, ax1,
                   ax2,

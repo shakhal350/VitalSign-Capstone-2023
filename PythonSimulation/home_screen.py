@@ -6,6 +6,7 @@ from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import plotting
 import pandas as pd
+import csv
 
 def SplashScreen():
     splash_root = tk.Tk()
@@ -39,36 +40,39 @@ class VitalSignsGUI:
         self.settings_frame.pack_forget()
         self.main_frame.pack(side="top", fill="both", expand=True)
 
-        # Heart rate section
-        heart_rate_label = ttk.Label(self.main_frame, text="Heart Rate", font=("Arial", 20))
+        heart_rate_label = ttk.Label(self.main_frame, text="Heart Rate", font=("Arial", 18))
         heart_rate_value = ttk.Label(self.main_frame, text="80 bpm", font=("Arial", 24), foreground="red")
-        
-        # Retrieve the plot for heart rate from plotting module
-        fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
-        heart_rate_plot = FigureCanvasTkAgg(fig1, master=self.main_frame)  # Embedding the plot in the Tkinter window
-
         heart_rate_label.grid(row=0, column=0, sticky="w")
         heart_rate_value.grid(row=1, column=0, sticky="w")
-        heart_rate_plot.get_tk_widget().grid(row=2, column=0, sticky="ew")
 
-        # Respiratory rate section
-        respiratory_rate_label = ttk.Label(self.main_frame, text="Respiratory Rate", font=("Arial", 20))
+        respiratory_rate_label = ttk.Label(self.main_frame, text="Respiratory Rate", font=("Arial", 18))
         respiratory_rate_value = ttk.Label(self.main_frame, text="18 breaths/min", font=("Arial", 24), foreground="blue")
-        
-        # Retrieve the plot for respiratory rate from plotting module
-        fig2, ax3, ax4, line3, line4 = plotting.setup_plots(2)
-        respiratory_rate_plot = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
-
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
-        respiratory_rate_plot.get_tk_widget().grid(row=2, column=1, sticky="ew")
+
+
+        fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
+        plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
+
+        fig2, ax3, ax4, line3, line4 = plotting.setup_plots(2)
+        plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        plot2.get_tk_widget().grid(row=3, column=0, sticky="ew")
+
+        fig3, ax5, ax6, line5, line6 = plotting.setup_plots(3)
+        plot3 = FigureCanvasTkAgg(fig3, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        plot3.get_tk_widget().grid(row=2, column=1, sticky="ew")
+
+        fig4, ax7, ax8, line7, line8 = plotting.setup_plots(4)
+        plot4 = FigureCanvasTkAgg(fig4, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        plot4.get_tk_widget().grid(row=3, column=1, sticky="ew")
 
         # View physiological history button
         view_history_button = ttk.Button(self.main_frame, text="View Physiological History")
-        view_history_button.grid(row=3, column=0, columnspan=2)
+        view_history_button.grid(row=4, column=0, columnspan=2)
         # Patient Info button
         view_settings_button = ttk.Button(self.main_frame, text="View Patient Information", command=self.settingsPage)
-        view_settings_button.grid(row=4, column=0, columnspan=2)
+        view_settings_button.grid(row=5, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
         # self.run_animation(data, samples_per_frame, fps, window_size, update_interval)
@@ -90,6 +94,8 @@ class VitalSignsGUI:
         weight_entry = ttk.Entry(self.settings_frame, textvariable=self.userWeight, font=("Arial", 14), state="disabled")
         height_entry = ttk.Entry(self.settings_frame, textvariable=self.userHeight, font=("Arial", 14), state="disabled")
 
+        self.readValues(age_entry, sex_entry, weight_entry, height_entry)
+
         age_label.grid(row=0, column=0, sticky="w")
         sex_label.grid(row=1, column=0, sticky="w")
         weight_label.grid(row=2, column=0, sticky="w")
@@ -102,27 +108,38 @@ class VitalSignsGUI:
 
         go_back_button = ttk.Button(self.settings_frame, text="Go Back", command=self.main)
         go_back_button.grid(row=1, column=2, columnspan=2)
-        save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(age_entry,sex_entry,weight_entry,height_entry))
+        save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(age_entry,weight_entry,height_entry))
         save_button.grid(row=2, column=2, columnspan=2)
-        edit_button = ttk.Button(self.settings_frame, text="Edit",command=lambda: self.edit(age_entry, sex_entry, weight_entry, height_entry))
+        edit_button = ttk.Button(self.settings_frame, text="Edit", command=lambda: self.edit(age_entry, weight_entry, height_entry))
         edit_button.grid(row=3, column=2, columnspan=2)
 
     # You can create a method to run the animation if you want to start it with a button click, for example
 
+    def readValues(self,age_entry, sex_entry, weight_entry, height_entry):
+        with open("settingsinfo.csv","r") as csvfile:
+            reader = csv.reader(csvfile)
+            count = 0
+            for row in reader:
+                if count == 2:
+                    self.userAge.set(row[0])
+                count = count + 1
 
-    def save(self, age_entry, sex_entry, weight_entry, height_entry):
 
-        self.userAge.set(age_entry.get())
-        self.userWeight.set(weight_entry.get())
-        self.userHeight.set(height_entry.get())
+    def save(self, age_entry, weight_entry, height_entry):
+
+        fields = ["Age", "Sex", "Weight", "Height"]
+        values = [age_entry.get(), self.userGender.get(), weight_entry.get(), height_entry.get()]
+        with open("settingsinfo.csv", "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(fields)
+            writer.writerow(values)
 
         age_entry.config(state="disabled")
-        #sex_entry.config(state=DISABLED)
         weight_entry.config(state="disabled")
         height_entry.config(state="disabled")
 
 
-    def edit(self, age_entry, sex_entry, weight_entry, height_entry):
+    def edit(self, age_entry, weight_entry, height_entry):
         age_entry.config(state="enabled")
         weight_entry.config(state="enabled")
         height_entry.config(state="enabled")
