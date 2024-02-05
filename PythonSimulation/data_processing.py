@@ -10,8 +10,6 @@ def load_and_process_data(filename):
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
         data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
         data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
-        print(f"data_avg_real: {data_avg_real[:10]}")
-        print(f"data_avg_imag: {data_avg_imag[:10]}")
 
         return data_avg_real, data_avg_imag, get_radar_parameters("Children Dataset")
 
@@ -22,8 +20,6 @@ def load_and_process_data(filename):
             data[col] = data[col].apply(lambda x: complex(x))
         data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
         data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
-        print(f"data_avg_real: {data_avg_real[:10]}")
-        print(f"data_avg_imag: {data_avg_imag[:10]}")
         return data_avg_real, data_avg_imag, get_radar_parameters("DCA1000EVM")
     if 'Walking' in filename:
         data = pd.read_csv(filename, header=None)
@@ -31,8 +27,6 @@ def load_and_process_data(filename):
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
         data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
         data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
-        print(f"data_avg_real: {data_avg_real[:10]}")
-        print(f"data_avg_imag: {data_avg_imag[:10]}")
         return data_avg_real, data_avg_imag, get_radar_parameters("Walking Dataset")
 
 

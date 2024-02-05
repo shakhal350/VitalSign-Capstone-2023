@@ -16,8 +16,5 @@ animation_update_interval = 1
 data_Re = SVD_Matrix(data_Re, radar_parameters)
 data_Im = SVD_Matrix(data_Im, radar_parameters)
 
-print(f"data_Re, after SVD_Matrix: {data_Re[:10]}")
-print(f"data_Im, after SVD_Matrix: {data_Im[:10]}")
-
 # Create and start animation
-create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=10)
+create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
