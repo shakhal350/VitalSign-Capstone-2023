@@ -6,7 +6,8 @@ from filter_processing import butter_bandpass_filter, apply_high_pass_filter
 from peak_processing import find_significant_peaks, reconstruct_signal_from_peaks
 
 phase_history = []
-
+accumulated_breathing_signal = []
+accumulated_heart_signal = []
 
 def setup_plots(plotnumber):
     if plotnumber == 1:
@@ -53,13 +54,7 @@ def setup_plots(plotnumber):
 
 def plot_range_fft(current_sample, data, radar_parameters, sample_window_size, line1, line2, ax1, ax2):
     sample_per_second = radar_parameters["samplesPerSecond"]
-    samplingRate = radar_parameters["sampleRate"]
-    range_max = radar_parameters["rangeMax"]
-    range_bins = radar_parameters["NumOfRangeBins"]
-    range_res = radar_parameters["rangeResol"]
     fps = radar_parameters["frameRate"]
-    Bandwidth = radar_parameters["bandwidth"]
-    chirp_length = radar_parameters["chirpTime"]
     freqSlope = radar_parameters["freqSlope"]
     c = 3e8
 
@@ -103,7 +98,7 @@ def plot_range_fft(current_sample, data, radar_parameters, sample_window_size, l
 
     # Set the data for the plot
     line2.set_data(fft_freqs, fft_magnitude)
-    ax2.set_xlim(-fps / 2, fps / 2)
+    ax2.set_xlim(0, fps / 2)
     ax2.set_ylim(0, np.max(fft_magnitude[1:fft_half_length]))
 
     return line1, line2
@@ -140,7 +135,6 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
 
     starting_time = starting_sample / sample_per_second
     latest_time = ending_sample / sample_per_second
-    time_values = np.linspace(starting_time, latest_time, num=len(time_data))
     ############################################################################################################
     ############################################ Breathing Rate ################################################
     ############################################################################################################
@@ -148,9 +142,13 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
         peak_indices = [idx for idx, _ in peak_index_breathing[:5]]
         print(f"Five Strongest peaks for Breathing = {freqs[peak_indices[:5]]} Hz = ", freqs[peak_indices[:5]] * 60, " breaths per minute")
         breathing_time = reconstruct_signal_from_peaks(breathing_fft, peak_indices, freqs, len(time_data))
-        line3.set_data(time_values, breathing_time)
-        ax3.set_xlim(starting_time, latest_time)
-        ax3.set_ylim(breathing_time.min(), breathing_time.max())
+        # Append the new breathing time data to the accumulated data
+        accumulated_breathing_signal.extend(breathing_time)
+        # Ensure that time_values and accumulated_breathing_signal have the same shape
+        time_values = np.linspace(0, latest_time, num=len(accumulated_breathing_signal))
+        line3.set_data(time_values, accumulated_breathing_signal)
+        ax3.set_xlim(0, latest_time)
+        ax3.set_ylim(min(accumulated_breathing_signal), max(accumulated_breathing_signal))
     else:
         print("No significant breathing peaks found.")
     ############################################################################################################
@@ -160,9 +158,11 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
         peak_indices = [idx for idx, _ in peak_index_heart[:5]]
         print(f"Five Strongest peak for Heart = {freqs[peak_indices[:5]]} Hz = ", freqs[peak_indices[:5]] * 60, " beats per minute")
         heart_time = reconstruct_signal_from_peaks(heart_fft, peak_indices, freqs, len(time_data))
-        line4.set_data(time_values, heart_time)
-        ax4.set_xlim(starting_time, latest_time)
-        ax4.set_ylim(heart_time.min(), heart_time.max())
+        accumulated_heart_signal.extend(heart_time)
+        time_values = np.linspace(0, latest_time, num=len(accumulated_heart_signal))
+        line4.set_data(time_values, accumulated_heart_signal)
+        ax4.set_xlim(0, latest_time)
+        ax4.set_ylim(min(accumulated_heart_signal), max(accumulated_heart_signal))
     else:
         print("No significant heart peaks found.")
 
@@ -201,6 +201,6 @@ def create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWi
                          interval=update_interval * 1000, repeat=False)
     plt.show()
 
-    newFig, (newAx1, newAx2) = plt.subplots(2, 1)
-    newAx1.plot(np.arange(len(phase_history)), phase_history)
-    plt.show()
+    # newFig, (newAx1, newAx2) = plt.subplots(2, 1)
+    # newAx1.plot(np.arange(len(phase_history)), phase_history)
+    # plt.show()
