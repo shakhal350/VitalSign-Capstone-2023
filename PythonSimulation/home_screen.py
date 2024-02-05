@@ -59,13 +59,13 @@ class VitalSignsGUI:
         plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
         plot2.get_tk_widget().grid(row=3, column=0, sticky="ew")
 
-        fig3, ax5, ax6, line5, line6 = plotting.setup_plots(3)
-        plot3 = FigureCanvasTkAgg(fig3, master=self.main_frame)  # Embedding the plot in the Tkinter window
-        plot3.get_tk_widget().grid(row=2, column=1, sticky="ew")
+        #fig3, ax5, ax6, line5, line6 = plotting.setup_plots(3)
+        #plot3 = FigureCanvasTkAgg(fig3, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        #plot3.get_tk_widget().grid(row=2, column=1, sticky="ew")
 
-        fig4, ax7, ax8, line7, line8 = plotting.setup_plots(4)
-        plot4 = FigureCanvasTkAgg(fig4, master=self.main_frame)  # Embedding the plot in the Tkinter window
-        plot4.get_tk_widget().grid(row=3, column=1, sticky="ew")
+        #fig4, ax7, ax8, line7, line8 = plotting.setup_plots(4)
+        #plot4 = FigureCanvasTkAgg(fig4, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        #plot4.get_tk_widget().grid(row=3, column=1, sticky="ew")
 
         # View physiological history button
         view_history_button = ttk.Button(self.main_frame, text="View Physiological History")
