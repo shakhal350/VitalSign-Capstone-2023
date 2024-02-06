@@ -176,8 +176,8 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     return line1, line2, line3, line4
 
 
-def create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
-    fig, ax1, ax2, line1, line2 = setup_plots(1)
+def create_animation(fig, ax1, ax2, line1, line2, data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
+    "fig, ax1, ax2, line1, line2 = setup_plots(1)"
     window_size = int(radar_parameters["samplesPerFrame"] * radar_parameters["frameRate"] * timeWindowMultiplier)
     print(f"Window Size: {window_size}")
 
@@ -194,14 +194,15 @@ def create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWi
 
     plt.show()
 
-    fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4 = setup_plots(2)
-    ani2 = FuncAnimation(fig,
-                         lambda frame: plot_filtered_fft(frame, data, radar_parameters, window_size,
-                                                         line1, line2, line3, line4, ax1, ax2, ax3, ax4), frames=frames,
-                         blit=False,
-                         interval=update_interval * 1000, repeat=False)
-    plt.show()
+    # fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4 = setup_plots(2)
+    # ani2 = FuncAnimation(fig,
+    #                     lambda frame: plot_filtered_fft(frame, data, radar_parameters, window_size,
+    #                     line1, line2, line3, line4, ax1, ax2, ax3, ax4), frames=frames,
+    #                     blit=False,
+    #                    interval=update_interval * 1000, repeat=False)
+    # plt.show()
 
     # newFig, (newAx1, newAx2) = plt.subplots(2, 1)
     # newAx1.plot(np.arange(len(phase_history)), phase_history)
     # plt.show()
+    # return fig, ani1, ani2
