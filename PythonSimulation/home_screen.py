@@ -2,6 +2,9 @@ import csv
 import tkinter as tk
 from tkinter import CENTER
 from tkinter import ttk
+from SVD_processing import SVD_Matrix
+from data_processing import load_and_process_data
+from plotting import create_animation
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -65,14 +68,6 @@ class VitalSignsGUI:
         plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
         plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
 
-        #fig3, ax5, ax6, line5, line6 = plotting.setup_plots(3)
-        #plot3 = FigureCanvasTkAgg(fig3, master=self.main_frame)  # Embedding the plot in the Tkinter window
-        #plot3.get_tk_widget().grid(row=2, column=1, sticky="ew")
-
-        #fig4, ax7, ax8, line7, line8 = plotting.setup_plots(4)
-        #plot4 = FigureCanvasTkAgg(fig4, master=self.main_frame)  # Embedding the plot in the Tkinter window
-        #plot4.get_tk_widget().grid(row=3, column=1, sticky="ew")
-
         # View physiological history button
         view_history_button = ttk.Button(self.main_frame, text="View Physiological History")
         view_history_button.grid(row=3, column=0, columnspan=2)
@@ -97,7 +92,6 @@ class VitalSignsGUI:
 
         age_entry = ttk.Entry(self.settings_frame, textvariable=self.userAge, font=("Arial", 14), state="disabled")
         sex_entry = ttk.OptionMenu(self.settings_frame, self.userGender, *options)
-        #sex_entry = ttk.Entry(self.settings_frame, textvariable=self.userGender, font=("Arial", 14))
         weight_entry = ttk.Entry(self.settings_frame, textvariable=self.userWeight, font=("Arial", 14), state="disabled")
         height_entry = ttk.Entry(self.settings_frame, textvariable=self.userHeight, font=("Arial", 14), state="disabled")
 
@@ -152,7 +146,7 @@ class VitalSignsGUI:
         height_entry.config(state="enabled")
 
     def run_animation(self, fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2):
-        #filename = r'/Users/liampereira/Documents/Code/Transposed_Rawdata_11.csv'
+        filename = r'DCA1000EVM_shayan_52sec.csv'
 
         # Load and process data
         data_Re, data_Im, radar_parameters = load_and_process_data(filename)
@@ -164,6 +158,7 @@ class VitalSignsGUI:
         plotting.create_animation(fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
         #plotting.create_animation(fig, ax1, ax2, line1, line2, data, samples_per_frame, fps, window_size, update_interval)
 
+    """
     def setAge(self, age):
         self.userAge = age
     def setGender(self, gender):
@@ -181,6 +176,7 @@ class VitalSignsGUI:
         return self.userWeight
     def getHeight(self):
         return self.userHeight
+    """
 
     def create_plot(self, data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
         # Call the create_animation function from plotting.py
@@ -203,29 +199,7 @@ class VitalSignsGUI:
         widget.pack()
 
 
-
 if __name__ == "__main__":
-    from SVD_processing import SVD_Matrix
-    from data_processing import load_and_process_data
-    from plotting import create_animation
-
-    # Parameters and filename
-    # filename = r'C:\Users\Shaya\Downloads\DCA1000EVM_shayan.csv'
-    # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
-    filename = r'phase3test.csv'
-    # filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
-
-    # Load and process data
-    data_Re, data_Im, radar_parameters = load_and_process_data(filename)
-
-    animation_update_interval = 1
-
-    data_Re = SVD_Matrix(data_Re, radar_parameters)
-    data_Im = SVD_Matrix(data_Im, radar_parameters)
-
-    # Create and start animation
-    # create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
-
     # Create an instance of VitalSignsGUI
     splash = SplashScreen()
     root = tk.Tk()
