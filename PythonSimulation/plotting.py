@@ -179,8 +179,8 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     heartRate = sum(freqs[peak_indices_heart[:5]]*60)/len(peak_indices_heart)
     breathingRate = sum(freqs[peak_indices_breath[:5]]*60)/len(peak_indices_breath)
 
-    label1.config(text=f"{round(heartRate,2)} BPM")
-    label2.config(text=f"{round(breathingRate,2)} BPM")
+    label1.config(text=f"{round(breathingRate,2)} BPM")
+    label2.config(text=f"{round(heartRate,2)} BPM")
 
     return line1, line2, line3, line4
 
