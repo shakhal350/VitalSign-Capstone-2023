@@ -109,8 +109,8 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     fps = radar_parameters["frameRate"]
     sample_per_second = radar_parameters["samplesPerSecond"]
     # create a function that takes in the current sample and plots the filtered fft using IIR filter to bandpass heart rate and breathing rate
-    breathing_rate_range = [0.1, 0.8]  # Hz = 60*0.1 to 60*0.7 = 6 to 48 breaths per minute
-    heart_rate_range = [0.8, 2]  # Hz = 60*0.8 to 60*2 = 48 to 120 beats per minute
+    breathing_rate_range = [0.25, 0.416]  # Hz = 60*0.1 to 60*0.7 = 6 to 48 breaths per minute
+    heart_rate_range = [1, 1.6]  # Hz = 60*0.8 to 60*2 = 48 to 120 beats per minute
 
     starting_sample = max(0, current_sample - sample_window_size)
     ending_sample = min(current_sample, len(data))
@@ -166,7 +166,7 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
         ax4.set_ylim(min(accumulated_heart_signal), max(accumulated_heart_signal))
     else:
         print("No significant heart peaks found.")
-    extra_gap = 0.3
+    extra_gap = 0
     # Update the axes using the line data
     ax1.set_xlim(0, breathing_rate_range[1] + extra_gap)
     ax1.set_ylim(0, np.max(breathing_fft))

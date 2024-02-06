@@ -47,9 +47,8 @@ class VitalSignsGUI:
         self.main_frame.pack(side="top", fill="both", expand=True)
 
         scrollbar = ttk.Scrollbar(self.main_frame, orient="vertical")
-        scrollbar2 = ttk.Scrollbar(self.main_frame, orient="horizontal")
+        scrollbar.config()
         scrollbar.grid(row=0, column=2, sticky="w")
-        scrollbar2.grid(row=5, column=0, sticky="ew")
 
         heart_rate_label = ttk.Label(self.main_frame, text="Heart Rate", font=("Arial", 18))
         heart_rate_value = ttk.Label(self.main_frame, text="80 bpm", font=("Arial", 24), foreground="red")
@@ -60,7 +59,6 @@ class VitalSignsGUI:
         respiratory_rate_value = ttk.Label(self.main_frame, text="18 breaths/min", font=("Arial", 24), foreground="blue")
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
-
 
         fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
         plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame)  # Embedding the plot in the Tkinter window
@@ -80,10 +78,10 @@ class VitalSignsGUI:
 
         # View physiological history button
         view_history_button = ttk.Button(self.main_frame, text="View Physiological History")
-        view_history_button.grid(row=3, column=0, columnspan=2)
+        view_history_button.grid(row=4, column=0, columnspan=2)
         # Patient Info button
         view_settings_button = ttk.Button(self.main_frame, text="View Patient Information", command=self.settingsPage)
-        view_settings_button.grid(row=4, column=0, columnspan=2)
+        view_settings_button.grid(row=5, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
         self.run_animation(fig1, ax1, ax2, line1, line2)
