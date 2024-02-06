@@ -31,7 +31,13 @@ class VitalSignsGUI:
         self.settings_frame = ttk.Frame(self.root, padding="10")
         self.startup = True
 
-    def main(self):
+        self.canvas = None
+        self.animation1 = None
+        self.animation2 = None
+
+
+
+    def home_screen(self):
 
         if self.startup == True:
             self.splash_root.destroy()
@@ -55,9 +61,9 @@ class VitalSignsGUI:
         plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame)  # Embedding the plot in the Tkinter window
         plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
 
-        fig2, ax3, ax4, line3, line4 = plotting.setup_plots(2)
+        fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(2)
         plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
-        plot2.get_tk_widget().grid(row=3, column=0, sticky="ew")
+        plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
 
         #fig3, ax5, ax6, line5, line6 = plotting.setup_plots(3)
         #plot3 = FigureCanvasTkAgg(fig3, master=self.main_frame)  # Embedding the plot in the Tkinter window
@@ -69,13 +75,14 @@ class VitalSignsGUI:
 
         # View physiological history button
         view_history_button = ttk.Button(self.main_frame, text="View Physiological History")
-        view_history_button.grid(row=4, column=0, columnspan=2)
+        view_history_button.grid(row=3, column=0, columnspan=2)
         # Patient Info button
         view_settings_button = ttk.Button(self.main_frame, text="View Patient Information", command=self.settingsPage)
-        view_settings_button.grid(row=5, column=0, columnspan=2)
+        view_settings_button.grid(row=4, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
-        # self.run_animation(data, samples_per_frame, fps, window_size, update_interval)
+        self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
+
     def settingsPage(self):
 
         self.settings_frame.pack(expand=True)
@@ -106,7 +113,7 @@ class VitalSignsGUI:
         weight_entry.grid(row=2, column=1, sticky="w")
         height_entry.grid(row=3, column=1, sticky="w")
 
-        go_back_button = ttk.Button(self.settings_frame, text="Go Back", command=self.main)
+        go_back_button = ttk.Button(self.settings_frame, text="Go Back", command=self.home_screen)
         go_back_button.grid(row=1, column=2, columnspan=2)
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(age_entry,weight_entry,height_entry))
         save_button.grid(row=2, column=2, columnspan=2)
@@ -144,8 +151,18 @@ class VitalSignsGUI:
         weight_entry.config(state="enabled")
         height_entry.config(state="enabled")
 
-    def run_animation(self, data, samples_per_frame, fps, window_size, update_interval):
-        plotting.create_animation(data, samples_per_frame, fps, window_size, update_interval)
+    def run_animation(self, fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2):
+        #filename = r'/Users/liampereira/Documents/Code/Transposed_Rawdata_11.csv'
+
+        # Load and process data
+        data_Re, data_Im, radar_parameters = load_and_process_data(filename)
+
+        animation_update_interval = 1
+
+        data_Re = SVD_Matrix(data_Re, radar_parameters)
+        data_Im = SVD_Matrix(data_Im, radar_parameters)
+        plotting.create_animation(fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
+        #plotting.create_animation(fig, ax1, ax2, line1, line2, data, samples_per_frame, fps, window_size, update_interval)
 
     def setAge(self, age):
         self.userAge = age
@@ -165,6 +182,26 @@ class VitalSignsGUI:
     def getHeight(self):
         return self.userHeight
 
+    def create_plot(self, data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
+        # Call the create_animation function from plotting.py
+        self.fig, self.animation1, self.animation2 = create_animation(data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier)
+
+        # Create a FigureCanvasTkAgg object with the figure
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)  # A tk.DrawingArea.
+        self.canvas.draw()
+
+        # Get the Tkinter widget and pack it into the GUI
+        widget = self.canvas.get_tk_widget()
+        widget.pack()
+
+        # Create a FigureCanvasTkAgg object with the figure
+        self.canvas.draw()
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)  # A tk.DrawingArea.
+
+        # Get the Tkinter widget and pack it into the GUI
+        widget = self.canvas.get_tk_widget()
+        widget.pack()
+
 
 
 if __name__ == "__main__":
@@ -175,7 +212,7 @@ if __name__ == "__main__":
     # Parameters and filename
     # filename = r'C:\Users\Shaya\Downloads\DCA1000EVM_shayan.csv'
     # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
-    filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_11.csv'
+    filename = r'Transposed_Rawdata_11.csv'
     # filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
 
     # Load and process data
@@ -187,10 +224,15 @@ if __name__ == "__main__":
     data_Im = SVD_Matrix(data_Im, radar_parameters)
 
     # Create and start animation
-    create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
+    # create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
 
+    # Create an instance of VitalSignsGUI
     splash = SplashScreen()
     root = tk.Tk()
     app = VitalSignsGUI(root, splash)
-    splash.after(5000, app.main)
+
+    # Call the create_plot method on the instance
+    #app.create_plot(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
+
+    splash.after(5000, app.home_screen)
     root.mainloop()
