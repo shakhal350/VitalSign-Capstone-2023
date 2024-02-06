@@ -37,7 +37,7 @@ class VitalSignsGUI:
 
 
 
-    def main(self):
+    def home_screen(self):
 
         if self.startup == True:
             self.splash_root.destroy()
@@ -85,6 +85,7 @@ class VitalSignsGUI:
 
         # You might want to run the animation as part of the GUI initialization
         self.run_animation(fig1, ax1, ax2, line1, line2)
+
     def settingsPage(self):
 
         self.settings_frame.pack(expand=True)
@@ -115,7 +116,7 @@ class VitalSignsGUI:
         weight_entry.grid(row=2, column=1, sticky="w")
         height_entry.grid(row=3, column=1, sticky="w")
 
-        go_back_button = ttk.Button(self.settings_frame, text="Go Back", command=self.main)
+        go_back_button = ttk.Button(self.settings_frame, text="Go Back", command=self.home_screen)
         go_back_button.grid(row=1, column=2, columnspan=2)
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(age_entry,weight_entry,height_entry))
         save_button.grid(row=2, column=2, columnspan=2)
@@ -154,7 +155,7 @@ class VitalSignsGUI:
         height_entry.config(state="enabled")
 
     def run_animation(self, fig, ax1, ax2, line1, line2):
-        filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_11.csv'
+        #filename = r'/Users/liampereira/Documents/Code/Transposed_Rawdata_11.csv'
 
         # Load and process data
         data_Re, data_Im, radar_parameters = load_and_process_data(filename)
@@ -214,7 +215,7 @@ if __name__ == "__main__":
     # Parameters and filename
     # filename = r'C:\Users\Shaya\Downloads\DCA1000EVM_shayan.csv'
     # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
-    filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_11.csv'
+    filename = r'/Users/liampereira/Documents/Code/Transposed_Rawdata_11.csv'
     # filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
 
     # Load and process data
@@ -236,5 +237,5 @@ if __name__ == "__main__":
     # Call the create_plot method on the instance
     #app.create_plot(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
 
-    splash.after(5000, app.main)
+    splash.after(5000, app.home_screen)
     root.mainloop()
