@@ -46,10 +46,6 @@ class VitalSignsGUI:
         self.settings_frame.pack_forget()
         self.main_frame.pack(side="top", fill="both", expand=True)
 
-        scrollbar = ttk.Scrollbar(self.main_frame, orient="vertical")
-        scrollbar.config()
-        scrollbar.grid(row=0, column=2, sticky="w")
-
         heart_rate_label = ttk.Label(self.main_frame, text="Heart Rate", font=("Arial", 18))
         heart_rate_value = ttk.Label(self.main_frame, text="80 bpm", font=("Arial", 24), foreground="red")
         heart_rate_label.grid(row=0, column=0, sticky="w")
@@ -60,13 +56,14 @@ class VitalSignsGUI:
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
 
+
         fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
         plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame)  # Embedding the plot in the Tkinter window
         plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
 
-        # fig2, ax3, ax4, line3, line4 = plotting.setup_plots(2)
-        # plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
-        # plot2.get_tk_widget().grid(row=3, column=0, sticky="ew")
+        fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(2)
+        plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame)  # Embedding the plot in the Tkinter window
+        plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
 
         #fig3, ax5, ax6, line5, line6 = plotting.setup_plots(3)
         #plot3 = FigureCanvasTkAgg(fig3, master=self.main_frame)  # Embedding the plot in the Tkinter window
@@ -78,13 +75,13 @@ class VitalSignsGUI:
 
         # View physiological history button
         view_history_button = ttk.Button(self.main_frame, text="View Physiological History")
-        view_history_button.grid(row=4, column=0, columnspan=2)
+        view_history_button.grid(row=3, column=0, columnspan=2)
         # Patient Info button
         view_settings_button = ttk.Button(self.main_frame, text="View Patient Information", command=self.settingsPage)
-        view_settings_button.grid(row=5, column=0, columnspan=2)
+        view_settings_button.grid(row=4, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
-        self.run_animation(fig1, ax1, ax2, line1, line2)
+        self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
 
     def settingsPage(self):
 
@@ -154,7 +151,7 @@ class VitalSignsGUI:
         weight_entry.config(state="enabled")
         height_entry.config(state="enabled")
 
-    def run_animation(self, fig, ax1, ax2, line1, line2):
+    def run_animation(self, fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2):
         #filename = r'/Users/liampereira/Documents/Code/Transposed_Rawdata_11.csv'
 
         # Load and process data
@@ -164,7 +161,7 @@ class VitalSignsGUI:
 
         data_Re = SVD_Matrix(data_Re, radar_parameters)
         data_Im = SVD_Matrix(data_Im, radar_parameters)
-        plotting.create_animation(fig, ax1, ax2, line1, line2, data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
+        plotting.create_animation(fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)
         #plotting.create_animation(fig, ax1, ax2, line1, line2, data, samples_per_frame, fps, window_size, update_interval)
 
     def setAge(self, age):
@@ -215,7 +212,7 @@ if __name__ == "__main__":
     # Parameters and filename
     # filename = r'C:\Users\Shaya\Downloads\DCA1000EVM_shayan.csv'
     # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
-    filename = r'/Users/liampereira/Documents/Code/Transposed_Rawdata_11.csv'
+    filename = r'Transposed_Rawdata_11.csv'
     # filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
 
     # Load and process data
