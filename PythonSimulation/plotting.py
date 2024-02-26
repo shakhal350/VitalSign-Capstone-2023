@@ -1,14 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
-import tkinter as tk
-from tkinter import CENTER
-from tkinter import ttk
 
 from filter_processing import butter_bandpass_filter, apply_high_pass_filter
 from peak_processing import find_significant_peaks, reconstruct_signal_from_peaks
 
-phase_history = []
 accumulated_breathing_signal = []
 accumulated_heart_signal = []
 
@@ -69,26 +65,9 @@ def plot_range_fft(current_sample, data, radar_parameters, sample_window_size, l
     time_data = data[starting_sample:ending_sample]
 
     # Perform FFT
-    fft_complex = np.fft.fft(time_data)
-    fft_normalized = fft_complex / np.max(np.abs(fft_complex))  # Normalizing by the max magnitude
-    fft_half_length = len(fft_normalized) // 2
-    # fft_half_length = len(fft_normalized)
-    fft_magnitude = np.abs(fft_normalized[:fft_half_length])  # Get magnitude spectrum for the first half
-    fft_freqs = np.fft.fftfreq(len(time_data), 1 / fps)[:fft_half_length]
-    # frequency_resolution = Sampling Rate / Number of Samples of FFT
+    fft_freqs, fft_half_length, fft_magnitude = perform_FFT(c, fps, freqSlope, time_data)
 
-    # Find the peak in the FFT
-    peak_index = find_significant_peaks(fft_magnitude, fft_freqs, width=100)
-
-    if len(peak_index) > 0:
-        peak_index = peak_index[0][0]
-        peak_Hz = fft_freqs[peak_index]
-        # convert to meters
-        distance = (peak_Hz * c) / (2 * freqSlope)
-        print(f"Peak Frequency: {peak_Hz} Hz = {distance} meters")
-    else:
-        print("peak_index is empty")
-        # handle the error appropriately
+    wrapped_phase = np.arctan2(np.imag(time_data), np.real(time_data))
 
     starting_time = starting_sample / sample_per_second  # Time of the first data point
     latest_time = ending_sample / sample_per_second  # Time of the latest data point
@@ -106,6 +85,29 @@ def plot_range_fft(current_sample, data, radar_parameters, sample_window_size, l
     ax2.set_ylim(0, np.max(fft_magnitude[1:fft_half_length]))
 
     return line1, line2
+
+
+def perform_FFT(c, fps, freqSlope, time_data):
+    # Perform FFT
+    fft_complex = np.fft.fft(time_data)
+    fft_normalized = fft_complex / np.max(np.abs(fft_complex))  # Normalizing by the max magnitude
+    fft_half_length = len(fft_normalized) // 2
+    # fft_half_length = len(fft_normalized)
+    fft_magnitude = np.abs(fft_normalized[:fft_half_length])  # Get magnitude spectrum for the first half
+    fft_freqs = np.fft.fftfreq(len(time_data), 1 / fps)[:fft_half_length]
+    # frequency_resolution = Sampling Rate / Number of Samples of FFT
+    # Find the peak in the FFT
+    peak_index = find_significant_peaks(fft_magnitude, fft_freqs, width=100)
+    if len(peak_index) > 0:
+        peak_index = peak_index[0][0]
+        peak_Hz = fft_freqs[peak_index]
+        # convert to meters
+        distance = (peak_Hz * c) / (2 * freqSlope)
+        print(f"Peak Frequency: {peak_Hz} Hz = {distance} meters")
+    else:
+        print("peak_index is empty")
+        # handle the error appropriately
+    return fft_freqs, fft_half_length, fft_magnitude
 
 
 def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size, line1, line2, line3, line4, ax1, ax2, ax3, ax4, label1, label2):
@@ -176,17 +178,16 @@ def plot_filtered_fft(current_sample, data, radar_parameters, sample_window_size
     ax2.set_xlim(heart_rate_range[0] - extra_gap, heart_rate_range[1] + extra_gap)
     ax2.set_ylim(0, np.max(heart_fft))
 
-    heartRate = sum(freqs[peak_indices_heart[:5]]*60)/len(peak_indices_heart)
-    breathingRate = sum(freqs[peak_indices_breath[:5]]*60)/len(peak_indices_breath)
+    heartRate = sum(freqs[peak_indices_heart[:5]] * 60) / len(peak_indices_heart)
+    breathingRate = sum(freqs[peak_indices_breath[:5]] * 60) / len(peak_indices_breath)
 
-    label1.config(text=f"{round(breathingRate,2)} BPM")
-    label2.config(text=f"{round(heartRate,2)} BPM")
+    label1.config(text=f"{round(breathingRate, 2)} BPM")
+    label2.config(text=f"{round(heartRate, 2)} BPM")
 
     return line1, line2, line3, line4
 
 
-def create_animation(fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6,label1,label2, data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
-    "fig, ax1, ax2, line1, line2 = setup_plots(1)"
+def create_animation(fig, fig2, ax1, ax2, ax3, ax4, ax5, ax6, line1, line2, line3, line4, line5, line6, label1, label2, data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
     window_size = int(radar_parameters["samplesPerFrame"] * radar_parameters["frameRate"] * timeWindowMultiplier)
     print(f"Window Size: {window_size}")
 
@@ -201,15 +202,9 @@ def create_animation(fig, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, 
                                                       ax1, ax2), frames=frames, blit=False,
                          interval=update_interval * 1000, repeat=False)
 
-    #ani1.save()
+    # ani1.save()
 
-    # fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4 = setup_plots(2)
-    ani2 = FuncAnimation(fig2, lambda frame: plot_filtered_fft(frame, data, radar_parameters,window_size,line3, line4, line5, line6,
-                                                               ax3, ax4, ax5, ax6, label1,label2), frames=frames,blit=False,
-                        interval=update_interval * 1000, repeat=False)
+    ani2 = FuncAnimation(fig2, lambda frame: plot_filtered_fft(frame, data, radar_parameters, window_size, line3, line4, line5, line6,
+                                                               ax3, ax4, ax5, ax6, label1, label2), frames=frames, blit=False,
+                         interval=update_interval * 1000, repeat=False)
     ani2.save()
-
-    # newFig, (newAx1, newAx2) = plt.subplots(2, 1)
-    # newAx1.plot(np.arange(len(phase_history)), phase_history)
-    # plt.show()
-    # return fig, ani1, ani2
