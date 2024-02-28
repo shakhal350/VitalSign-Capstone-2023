@@ -5,14 +5,15 @@ from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
 from scipy.signal import butter, filtfilt, find_peaks
 
-filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_13.csv'
+# filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_4.csv'
+filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
 data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 
 frameRate = radar_parameters['frameRate']
 samplesPerFrame = radar_parameters['samplesPerFrame']
 
 # pick a random number less than 290 to plot the data
-random_number = np.random.randint(0, 290)
+random_number = np.random.randint(0, 30)
 start = int(random_number * frameRate * samplesPerFrame)
 end = int((random_number + 3) * frameRate * samplesPerFrame)
 
@@ -75,7 +76,7 @@ else:
 # Plot the FFT spectrum and the peaks
 plt.figure()
 plt.plot(fft_freq, np.abs(fft_filtered_data))
-plt.plot(fft_freq[peaks], np.abs(fft_filtered_data)[peaks], "x")
+plt.plot(fft_freq[peaks], np.abs(fft_filtered_data)[peaks], "o", label='peaks', color='r')
 plt.title('FFT of ADC Data with Peaks')
 plt.show()
 
