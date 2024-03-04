@@ -12,7 +12,7 @@ from GradientFrame import GradientFrame
 class LoadingScreenGif:
     def __init__(self, r):
         self.root = r
-        self.canvas = GradientFrame(r, from_color="#e9b7ce", to_color="#d3f3f1", width=1300, height=740, borderwidth=0)
+        self.canvas = GradientFrame(r, from_color="#e9b7ce", to_color="#d3f3f1", width=17000, height=700, borderwidth=0)
 
         self.img0 = Image.open("loadingGif/frame_00_delay-0.03s.gif").resize((72, 72))
         self.img1 = Image.open("loadingGif/frame_01_delay-0.03s.gif").resize((72, 72))
@@ -81,9 +81,9 @@ class LoadingScreenGif:
                      self.gif17, self.gif18, self.gif19,self.gif20, self.gif21, self.gif22, self.gif23, self.gif24,
                      self.gif25, self.gif26, self.gif27, self.gif28, self.gif29]
 
-        self.text2 = self.canvas.create_text(610, 200, text="Vital Sign Monitor", font=("SF Pro Display", 56))
-        self.text1 = self.canvas.create_text(610, 370, text="Welcome", font=("SF Pro Display", 24))
-        self.final = self.canvas.create_image(610, 630, image=self.gif0)
+        self.text2 = self.canvas.create_text(810, 200, text="Vital Sign Monitor", font=("SF Pro Display", 56))
+        self.text1 = self.canvas.create_text(810, 370, text="Welcome", font=("SF Pro Display", 24))
+        self.final = self.canvas.create_image(810, 530, image=self.gif0)
 
     def pack(self):
         self.canvas.pack()
