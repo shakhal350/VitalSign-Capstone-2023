@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import font
 from tkinter import ttk
 from tkinter import CENTER
 import time
@@ -7,34 +8,40 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import plotting
 import pandas as pd
 import csv
-
-def SplashScreen():
-    splash_root = tk.Tk()
-    splash_root.geometry("300x300")
-
-    splash_background_image = tk.PhotoImage(file="background_splash.png")
-    splash_label = ttk.Label(splash_root, text="Welcome", font=56, image=splash_background_image)
-    splash_label.place(relx=0.5, rely=0.5, anchor=CENTER)
-    splash_label.pack()
-    return splash_root
+import LoadingScreenGif as LSG
+from GradientFrame import GradientFrame
 
 class VitalSignsGUI:
-    def __init__(self, root, splash_root):
+    def __init__(self, root):
         self.root = root
-        self.root.title("Vital Signs Monitor")
-        self.splash_root = splash_root
         self.userAge = tk.StringVar()
         self.userGender = tk.StringVar()
         self.userWeight = tk.StringVar()
         self.userHeight = tk.StringVar()
-        self.main_frame = ttk.Frame(self.root, padding="10")
         self.settings_frame = ttk.Frame(self.root, padding="10")
+        self.main_frame = ttk.Frame(self.root, padding="10")
+        self.splashFrame = ttk.Frame(self.root)
+        self.bg = ImageTk.PhotoImage(Image.open("back2.png"))
+        self.gif = []
+        for i in range(30):
+            self.gif.append(ImageTk.PhotoImage(file="load.gif", height=50, width=50, format="gif -index %i" %(i)))
+        self.frame = self.gif[0]
         self.startup = True
+        self.loadingGif = LSG.LoadingScreenGif(self.splashFrame)
+
+    def splashScreen(self):
+
+        self.settings_frame.pack_forget()
+        self.main_frame.pack_forget()
+        self.splashFrame.pack()
+
+        self.loadingGif.pack()
+        self.splashFrame.after(0,self.loadingGif.update,self.splashFrame, 0)
 
     def main(self):
 
         if self.startup == True:
-            self.splash_root.destroy()
+            self.splashFrame.destroy()
             self.startup = False
 
         self.settings_frame.pack_forget()
@@ -165,11 +172,23 @@ class VitalSignsGUI:
     def getHeight(self):
         return self.userHeight
 
+    def update(self,i,label):
+        self.frame = self.gif[i]
+        print(self.frame)
+        if i == 29:
+            i = 0
+        else:
+            i += 1
+        label.config(image=self.frame)
+        self.splashFrame.after(50, self.update, i, label)
+
 
 
 if __name__ == "__main__":
-    splash = SplashScreen()
     root = tk.Tk()
-    app = VitalSignsGUI(root, splash)
-    splash.after(5000, app.main)
+    root.geometry("1220x740")
+    root.title("Vital Signs Monitor")
+    app = VitalSignsGUI(root)
+    root.after(0,app.splashScreen)
+    root.after(6000, app.main)
     root.mainloop()
