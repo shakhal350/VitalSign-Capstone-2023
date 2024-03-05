@@ -13,8 +13,8 @@ data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 
 animation_update_interval = 1
 
-data_Re = SVD_Matrix(data_Re, radar_parameters)
-data_Im = SVD_Matrix(data_Im, radar_parameters)
+data_Re = SVD_Matrix(data_Re, radar_parameters, 2)
+data_Im = SVD_Matrix(data_Im, radar_parameters, 2)
 
 # Create and start animation
 create_animation(data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=5)

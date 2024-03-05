@@ -11,6 +11,7 @@ import csv
 import LoadingScreenGif as LSG
 from GradientFrame import GradientFrame
 
+
 class VitalSignsGUI:
     def __init__(self, root):
         self.root = root
@@ -25,6 +26,7 @@ class VitalSignsGUI:
         self.loadingGif = LSG.LoadingScreenGif(self.splashFrame)
 
     def splashScreen(self):
+
 
         self.settings_frame.pack_forget()
         self.main_frame.pack_forget()
@@ -56,7 +58,6 @@ class VitalSignsGUI:
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
 
-
         fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
         plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame) # Embedding the plot in the Tkinter window
         plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
@@ -77,6 +78,7 @@ class VitalSignsGUI:
         view_settings_button.grid(row=4, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
+
         self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
                            line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
     def settingsPage(self):
@@ -123,6 +125,7 @@ class VitalSignsGUI:
 
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(
             age_entry, weight_entry, height_entry))
+
         save_button.grid(row=2, column=2, columnspan=2)
 
         edit_button = ttk.Button(self.settings_frame, text="Edit", command=lambda: self.edit(
@@ -130,15 +133,14 @@ class VitalSignsGUI:
         edit_button.grid(row=3, column=2, columnspan=2)
 
 
-    def readValues(self,age_entry, sex_entry, weight_entry, height_entry):
-        with open("settingsinfo.csv","r") as csvfile:
+    def readValues(self, age_entry, sex_entry, weight_entry, height_entry):
+        with open("settingsinfo.csv", "r") as csvfile:
             reader = csv.reader(csvfile)
             count = 0
             for row in reader:
                 if count == 2:
                     self.userAge.set(row[0])
                 count = count + 1
-
 
     def save(self, age_entry, weight_entry, height_entry):
 
@@ -159,6 +161,7 @@ class VitalSignsGUI:
         age_entry.config(state="enabled")
         weight_entry.config(state="enabled")
         height_entry.config(state="enabled")
+
 
     def run_animation(self, fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2):
 
