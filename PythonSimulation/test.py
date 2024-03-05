@@ -119,7 +119,7 @@ for i in range(0, len(filtered_data_Re), samplesPerFrame):
 
     # Find indices of the window around the best peak frequency
     # Ensure that window_start and window_end are within the available frequency range
-    window_gap_added = 0.1  # Adjust as needed for your application
+    window_gap_added = 0  # Adjust as needed for your application
     window_start = max(best_peak_freq - window_gap_added, fft_freq_frame[0])
     window_end = min(best_peak_freq + window_gap_added, fft_freq_frame[-1])
 
@@ -129,10 +129,8 @@ for i in range(0, len(filtered_data_Re), samplesPerFrame):
 
     # Extract phase information for the window
     phase_values_frame = np.angle(fft_frame[window_start_index:window_end_index + 1])
-    phase_values_frame = np.median(phase_values_frame)
-    print(phase_values_frame)
     # Append to the overall phase values list
-    phase_values.append(phase_values_frame)
+    phase_values.extend(phase_values_frame)
 
 # Convert phase_values list to a NumPy array
 phase_values_array = np.array(phase_values)
