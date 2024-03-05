@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def SVD_Matrix(data_matrix, radar_parameters):
+def SVD_Matrix(data_matrix, radar_parameters, num_components):
     """
     Apply Singular Value Decomposition (SVD) to the radar data matrix.
 
@@ -31,17 +31,12 @@ def SVD_Matrix(data_matrix, radar_parameters):
         # Pad the array with zeros to fit the shape (N, K)
         radar_values = np.pad(radar_values, (0, total_samples - radar_values.size), 'constant')
 
-    print(f"N: {N}, K: {K}")
-    print(f"radar_values.size: {radar_values.size}")
-
     # Reshape the data into a matrix with N rows and K columns
     data_matrix = radar_values.reshape((N, K))
 
     # Perform SVD
     U, s, Vh = np.linalg.svd(data_matrix, full_matrices=False)
-
-    print(f"U.shape: {U.shape}, s.shape: {s.shape}, Vh.shape: {Vh.shape}")
-    noise_reduced_data = reduce_noise(U, s, Vh, 2)
+    noise_reduced_data = reduce_noise(U, s, Vh, num_components)
 
     return noise_reduced_data
 

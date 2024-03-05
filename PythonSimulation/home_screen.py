@@ -142,15 +142,15 @@ class VitalSignsGUI:
         height_entry.config(state="enabled")
 
     def run_animation(self, fig1, fig2, ax1, ax2, ax3, ax4, ax5, ax6, line1, line2, line3, line4, line5, line6, label1, label2):
-        filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_50sec.csv"
+        filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_fast_breathing.csv"
 
         # Load and process data
         data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 
         animation_update_interval = 1
 
-        data_Re = SVD_Matrix(data_Re, radar_parameters)
-        data_Im = SVD_Matrix(data_Im, radar_parameters)
+        data_Re = SVD_Matrix(data_Re, radar_parameters, 2)
+        data_Im = SVD_Matrix(data_Im, radar_parameters, 2)
         plotting.create_animation(fig1, fig2, ax1, ax2, ax3, ax4, ax5, ax6, line1, line2, line3, line4, line5, line6, label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval, timeWindowMultiplier=1)
 
     """
