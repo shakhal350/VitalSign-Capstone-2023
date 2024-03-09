@@ -36,7 +36,7 @@ def readDCA1000(fileName, csvFileName):
     # No need to transpose, as we've already arranged the array correctly
     df = pd.DataFrame(adcData)
     # Format each cell in DataFrame using the complex_formatter function
-    formatted_df = df.applymap(complex_formatter)
+    formatted_df = df.map(complex_formatter)
 
     # Save the formatted DataFrame to CSV without index
     formatted_df.to_csv(csvFileName, index=False)
@@ -44,4 +44,4 @@ def readDCA1000(fileName, csvFileName):
     return adcData
 
 
-readDCA1000("adc_data.bin", "output.csv")  # Enter file path
+readDCA1000(r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin", r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv")  # Enter file path

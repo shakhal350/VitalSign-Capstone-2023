@@ -165,14 +165,14 @@ class VitalSignsGUI:
 
     def run_animation(self, fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2):
 
-        #filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_normal_breathing.csv"
-        filename = r"DCA1000EVM_shayan_normal_breathing.csv"
+        filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_normal_breathing.csv"
+        # filename = r"DCA1000EVM_shayan_normal_breathing.csv"
         data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 
         animation_update_interval = 1
 
-        data_Re = SVD_Matrix(data_Re, radar_parameters)
-        data_Im = SVD_Matrix(data_Im, radar_parameters)
+        data_Re = SVD_Matrix(data_Re, radar_parameters, 2)
+        data_Im = SVD_Matrix(data_Im, radar_parameters, 2)
 
         plotting.create_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6,
                                   label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval,

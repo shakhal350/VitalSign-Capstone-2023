@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 
@@ -33,6 +32,7 @@ def load_and_process_data(filename):
 
         return data_avg_real, data_avg_imag, get_radar_parameters("Walking Dataset")
 
+
 def get_radar_parameters(dataset_name):
     c = 3e8  # Speed of light in meters per second
 
@@ -59,14 +59,14 @@ def get_radar_parameters(dataset_name):
             "rxNum": 4,  # Number of receivers
             "freqSlope": 10.235e12,  # Frequency slope of the chirp in Hz/s
             "sampleRate": 3e6,  # Sample rate of the ADC in samples/s
-            "bandwidth": 0.436907e9,  # Bandwidth of the chirp in Hz
+            "bandwidth": 3.814e9,  # Bandwidth of the chirp in Hz
             "chirpLoops": 2,  # Number of loops chirped
             "adcSamples": 256,  # Number of ADC samples per chirp
             "startFreq": 77e9,  # Starting frequency of chirp in Hz
-            "lambda": c / (0.436907e9 / 2 + 77e9),  # Wavelength in meters
-            "rangeResol": c / (2 * 0.436907e9),  # Range resolution in meters
+            "lambda": c / (3.814e9 / 2 + 77e9),  # Wavelength in meters -> lambda = c/(2B + fc)
+            "rangeResol": c / (2 * 3.814e9),  # Range resolution in meters -> R_res = c/(2B)
             "rangeMax": 35.132,  # Maximum range in meters
-            "chirpTime": 0.436907e9 / 10.235e12,  # Chirp time in seconds
+            "chirpTime": 3.814e9 / 10.235e12,  # Chirp time in seconds -> T_chirp = B/slope
             "frameRate": 20,  # Frame rate in frames per second
             "samplesPerFrame": 2 * 256,  # Number of samples per frame
             "samplesPerSecond": 2 * 256 * 20,  # Number of samples per second

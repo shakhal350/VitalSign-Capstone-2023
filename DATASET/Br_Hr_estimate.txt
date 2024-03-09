@@ -1,0 +1,12 @@
+8/3/2024
+grace1 = Br 19, Hr 72
+grace2 = Br 8, Hr 69
+grace3 = Br 28, Hr 65
+shayan_EVbuilding = Br 18, Hr 90
+shayan_EVbuilding_personBehind = Br 16, Hr 110
+shayan_EVbuilding_personBehind_slow_Br = Br 8, Hr 105
+shayan_EVbuilding_seizure = Br 5, Hr 107
+
+9/3/2024
+shayan_no_breathing_60sec = Br 0, Hr 80
+shayan_normal_upclose_60sec = Br 12, Hr 90
