@@ -11,10 +11,8 @@ def find_significant_peaks(fft_magnitude, fft_freqs, width):
 
     # Calculate the area for each peak
     for peak in peaks:
-        # print(f"Peak: {peak}")
         start_index = max(peak - width, 0)
         end_index = min(peak + width + 1, len(fft_magnitude))
-        # print(f"start_index: {start_index}, end_index: {end_index}")
         # Calculate the area under the curve for this peak
         area = simps(fft_magnitude[start_index:end_index], fft_freqs[start_index:end_index])
         peak_areas.append((peak, area))
