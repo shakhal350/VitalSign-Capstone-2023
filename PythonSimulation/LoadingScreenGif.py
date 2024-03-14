@@ -12,7 +12,7 @@ from GradientFrame import GradientFrame
 class LoadingScreenGif:
     def __init__(self, r):
         self.root = r
-        self.canvas = GradientFrame(r, from_color="#e9b7ce", to_color="#d3f3f1", width=17000, height=700, borderwidth=0)
+        self.canvas = GradientFrame(r, from_color="#FFF8ED", to_color="#6976DA", width=17000, height=700, borderwidth=0)
 
         self.img0 = Image.open("loadingGif/frame_00_delay-0.03s.gif").resize((72, 72))
         self.img1 = Image.open("loadingGif/frame_01_delay-0.03s.gif").resize((72, 72))
@@ -81,9 +81,13 @@ class LoadingScreenGif:
                      self.gif17, self.gif18, self.gif19,self.gif20, self.gif21, self.gif22, self.gif23, self.gif24,
                      self.gif25, self.gif26, self.gif27, self.gif28, self.gif29]
 
-        self.text2 = self.canvas.create_text(810, 200, text="Vital Sign Monitor", font=("SF Pro Display", 56))
-        self.text1 = self.canvas.create_text(810, 370, text="Welcome", font=("SF Pro Display", 24))
-        self.final = self.canvas.create_image(810, 530, image=self.gif0)
+        self.logoImage = Image.open("icons8-proximity-sensor-80.png").resize((150,150))
+        self.logoPic = ImageTk.PhotoImage(self.logoImage)
+
+
+        self.text2 = self.canvas.create_text(610, 150, text="BIONEST", font=("Mokoto", 64), fill="#3A48B0")
+        self.logo = self.canvas.create_image(610, 350, image=self.logoPic)
+        self.final = self.canvas.create_image(610, 530, image=self.gif0)
 
     def pack(self):
         self.canvas.pack()
@@ -97,11 +101,24 @@ class LoadingScreenGif:
         self.canvas.itemconfig(self.final, image=frame)
         root.after(20, self.update, root, i)
 
+    def select(self, root):
+        self.canvas.delete(self.final)
+        self.Vital = ttk.Button(root, text="Access Vital Signs")
+        self.Settings = ttk.Button(root, text="Settings")
+
+        #self.Vital.config(width=10, activebackground="#FFF8ED")
+        #self.Settings.config(width=10, activebackground="#FFF8ED")
+
+        self.VitalButton = self.canvas.create_window(610, 530,window=self.Vital)
+        self.SettingsButton = self.canvas.create_window(610, 570, window=self.Settings)
+
+
+
 #FOR TESTING
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("1220x740")
+    root.geometry("1220x640")
     root.title("Vital Signs Monitor")
     frame = tk.Frame(root)
     frame.pack()

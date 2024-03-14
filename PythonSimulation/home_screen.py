@@ -11,7 +11,6 @@ import csv
 import LoadingScreenGif as LSG
 from GradientFrame import GradientFrame
 
-
 class VitalSignsGUI:
     def __init__(self, root):
         self.root = root
@@ -27,13 +26,34 @@ class VitalSignsGUI:
 
     def splashScreen(self):
 
-
         self.settings_frame.pack_forget()
         self.main_frame.pack_forget()
         self.splashFrame.pack()
 
         self.loadingGif.pack()
         self.splashFrame.after(0,self.loadingGif.update,self.splashFrame, 0)
+        self.splashFrame.after(5000, self.loadingScreenUpdate)
+
+    def loadingScreenUpdate(self):
+
+        self.splashFrame.after(1000)
+        self.loadingGif.canvas.delete(self.loadingGif.final)
+
+        self.Record = tk.Button(root, text="Record Vitals", background="#FFF8ED")
+        self.Vital = tk.Button(root, text="Access Vital Signs", command=self.home_screen, background="#FFF8ED")
+        self.Settings = tk.Button(root, text="Settings", command=self.settingsPage, background="#FFF8ED")
+        self.Quit = tk.Button(root, text="Quit", command=self.root.destroy, background="#FFF8ED")
+
+        self.Record.config(width=10,padx=0,pady=0)
+        self.Settings.config(width=10,padx=0,pady=0)
+        self.Vital.config(width=10, padx=0, pady=0)
+        self.Quit.config(width=10, padx=0, pady=0)
+
+        self.RecordButton = self.loadingGif.canvas.create_window(610, 480, window=self.Record)
+        self.VitalButton = self.loadingGif.canvas.create_window(610, 510, window=self.Vital)
+        self.SettingsButton = self.loadingGif.canvas.create_window(610, 540, window=self.Settings)
+        self.QuitButton = self.loadingGif.canvas.create_window(610, 570, window=self.Quit)
+
 
     def home_screen(self):
 
@@ -82,6 +102,10 @@ class VitalSignsGUI:
         self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
                            line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
     def settingsPage(self):
+
+        if self.startup == True:
+            self.splashFrame.destroy()
+            self.startup = False
 
         self.settings_frame.pack(expand=True)
         self.main_frame.pack_forget()
@@ -218,9 +242,9 @@ class VitalSignsGUI:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("1620x640")
+    root.geometry("1220x640")
     root.title("Vital Signs Monitor")
     app = VitalSignsGUI(root)
     root.after(0,app.splashScreen)
-    root.after(6000, app.home_screen)
+    #root.after(6000, app.home_screen)
     root.mainloop()
