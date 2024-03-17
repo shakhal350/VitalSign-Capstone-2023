@@ -10,7 +10,8 @@ import csv
 from GradientFrame import GradientFrame
 
 class LoadingScreenGif:
-    def __init__(self, r):
+    def __init__(self, r, first):
+        self.startup = first
         self.root = r
         self.canvas = GradientFrame(r, from_color="#FFF8ED", to_color="#6976DA", width=17000, height=700, borderwidth=0)
 
@@ -87,10 +88,14 @@ class LoadingScreenGif:
 
         self.text2 = self.canvas.create_text(610, 150, text="BIONEST", font=("Mokoto", 64), fill="#3A48B0")
         self.logo = self.canvas.create_image(610, 350, image=self.logoPic)
-        self.final = self.canvas.create_image(610, 530, image=self.gif0)
+        if self.startup:
+            self.final = self.canvas.create_image(610, 530, image=self.gif0)
 
     def pack(self):
         self.canvas.pack()
+
+    def secondTime(self):
+        self.startup = False
 
     def update(self, root, i):
         frame = self.gifs[i]

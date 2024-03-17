@@ -22,7 +22,7 @@ class VitalSignsGUI:
         self.main_frame = ttk.Frame(self.root, padding="10")
         self.splashFrame = ttk.Frame(self.root)
         self.startup = True
-        self.loadingGif = LSG.LoadingScreenGif(self.splashFrame)
+        self.loadingGif = LSG.LoadingScreenGif(self.splashFrame, self.startup)
 
     def splashScreen(self):
 
@@ -31,14 +31,17 @@ class VitalSignsGUI:
         self.splashFrame.pack()
 
         self.loadingGif.pack()
-        self.splashFrame.after(0,self.loadingGif.update,self.splashFrame, 0)
-        self.splashFrame.after(5000, self.loadingScreenUpdate)
+        if self.startup:
+            self.splashFrame.after(0,self.loadingGif.update,self.splashFrame, 0)
+            self.splashFrame.after(5000, self.loadingScreenUpdate)
+        else:
+            self.splashFrame.after(0,self.loadingScreenUpdate)
 
     def loadingScreenUpdate(self):
 
-        self.splashFrame.after(1000)
-        self.loadingGif.canvas.delete(self.loadingGif.final)
-
+        if self.startup:
+            self.splashFrame.after(1000)
+            self.loadingGif.canvas.delete(self.loadingGif.final)
         self.Record = tk.Button(root, text="Record Vitals", background="#FFF8ED")
         self.Vital = tk.Button(root, text="Access Vital Signs", command=self.home_screen, background="#FFF8ED")
         self.Settings = tk.Button(root, text="Settings", command=self.settingsPage, background="#FFF8ED")
@@ -54,13 +57,15 @@ class VitalSignsGUI:
         self.SettingsButton = self.loadingGif.canvas.create_window(610, 540, window=self.Settings)
         self.QuitButton = self.loadingGif.canvas.create_window(610, 570, window=self.Quit)
 
+        self.loadingGif.secondTime()
+
 
     def home_screen(self):
 
         if self.startup == True:
-            self.splashFrame.destroy()
             self.startup = False
 
+        self.splashFrame.pack_forget()
         self.settings_frame.pack_forget()
         self.main_frame.pack(side="top", fill="both", expand=True)
 
@@ -97,18 +102,22 @@ class VitalSignsGUI:
             self.main_frame, text="View Patient Information", command=self.settingsPage)
         view_settings_button.grid(row=4, column=0, columnspan=2)
 
+        back_home_button = ttk.Button(
+            self.main_frame, text="Back Home", command=self.splashScreen)
+        back_home_button.grid(row=5, column=0, columnspan=2)
+
         # You might want to run the animation as part of the GUI initialization
 
-        self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
-                           line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
+        #self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
+                           #line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
     def settingsPage(self):
 
         if self.startup == True:
-            self.splashFrame.destroy()
             self.startup = False
 
-        self.settings_frame.pack(expand=True)
+        self.splashFrame.pack_forget()
         self.main_frame.pack_forget()
+        self.settings_frame.pack(expand=True)
 
         age_label = ttk.Label(self.settings_frame,
                               text="Age", font=("Arial", 20))
@@ -144,7 +153,7 @@ class VitalSignsGUI:
         height_entry.grid(row=3, column=1, sticky="w")
 
         go_back_button = ttk.Button(
-            self.settings_frame, text="Go Back", command=self.home_screen)
+            self.settings_frame, text="Back to Vitals", command=self.home_screen)
         go_back_button.grid(row=1, column=2, columnspan=2)
 
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(
@@ -155,6 +164,10 @@ class VitalSignsGUI:
         edit_button = ttk.Button(self.settings_frame, text="Edit", command=lambda: self.edit(
             age_entry, weight_entry, height_entry))
         edit_button.grid(row=3, column=2, columnspan=2)
+
+        back_home_button = ttk.Button(
+            self.settings_frame, text="Back Home", command=self.splashScreen)
+        back_home_button.grid(row=4, column=2, columnspan=2)
 
 
     def readValues(self, age_entry, sex_entry, weight_entry, height_entry):
