@@ -2,11 +2,43 @@ import os
 
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.constants import c
 from scipy.signal import find_peaks
 
-from PythonSimulation.filter_processing import apply_high_pass_filter, butter_bandpass_filter
+from cherrypicker import cherrypick
+from filter_processing import apply_high_pass_filter, butter_bandpass_filter, lowpass_filter
 from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
+from IPython.display import display, clear_output
+from process_raw_data import readDCA1000
+
+def apply_windowing(time_signal):
+    """
+    Apply a window function to the time signal to reduce spectral leakage.
+    """
+    # Example: Hamming window
+    window = np.hamming(len(time_signal))
+    return time_signal * window
+
+
+def compute_fft(time_signal, fRate):
+    """
+    Compute the FFT of the time signal, applying windowing to reduce spectral leakage.
+    """
+    # Subtract the mean to center the signal
+    time_signal_centered = time_signal - np.mean(time_signal)
+    # Apply windowing
+    time_signal_windowed = apply_windowing(time_signal_centered)
+
+    # Compute FFT
+    fft_signal = np.fft.fft(time_signal_windowed)
+    fft_freq = np.fft.fftfreq(len(fft_signal), d=1 / fRate)
+    # Keep only the positive frequencies
+    half = len(fft_signal) // 2
+    fft_signal = fft_signal[:half]
+    fft_freq = fft_freq[:half]
+
+    return fft_signal, fft_freq
 
 
 def find_significant_peaks(fft_data, fft_freq, prominence=0.1, width=1, percentile=99):
@@ -20,6 +52,7 @@ def select_best_peak(peaks, properties, fft_freq):
         scores = properties['prominences'] * properties['widths'] * properties['peak_heights']
         best_peak_idx = np.argmax(scores)
         best_peak_freq = fft_freq[peaks[best_peak_idx]]
+        print(f"Best Peak Frequency: {best_peak_freq} Hz")
     else:
         print("No peaks detected.")
         best_peak_freq = 0
@@ -34,32 +67,32 @@ def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.1):
     return window_start_peak, window_end_peak, window_start_index, window_end_index
 
 
+# pick a random number for window time
+window_time = 60  # <-----*** CHOOSE a window time YOU WANT ***
+random_start = np.random.randint(60, 100)  # <-----*** Randomly picks a start time *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT
+random_start = 0
+SVD_order = 4  # <-----*** CHOOSE a SVD order YOU WANT ***
+
 sampleNumber = np.random.randint(1, 50)  # <-----*** Randomly picks a sample number *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT TO TEST A SPECIFIC FILE
 filename_truth_Br = None
 filename_truth_HR = None
 # filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
 # filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
 # filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
-# filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_grace3_faster_BR.csv"
-filename = r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv"
-# filename = r"C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Walking AWR16x\Walking_adc_DataTable.csv"
+filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\ChestDisplacementData\March13th_Shayan_test\1\DCA1000EVM__greynuns_12br_70hr.csv"
+# filename = r"C:\Users\Shaya\OpenRadar\foo.csv"
 
 data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 frameRate = radar_parameters['frameRate']
 samplesPerFrame = radar_parameters['samplesPerFrame']
 
-data_FFT = np.fft.fft(data_Re + 1j * data_Im)
-data_FFT = np.abs(data_FFT)
-data_FFT_freq = np.fft.fftfreq(data_FFT.shape[0], d=1 / radar_parameters['frameRate'])
+data_abs = np.abs(data_Re + 1j * data_Im)
+data_fft, data_FFT_freq = compute_fft(data_abs, frameRate)
 
 if filename_truth_Br is not None and filename_truth_HR is not None:
     data_BR = np.genfromtxt(filename_truth_Br, delimiter=',')
     data_HR = np.genfromtxt(filename_truth_HR, delimiter=',')
 
-# pick a random number for window time
-window_time = 60  # <-----*** CHOOSE a window time YOU WANT ***
-random_start = np.random.randint(20, 25)  # <-----*** Randomly picks a start time *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT
-random_start = 0
 start = int(random_start * frameRate * samplesPerFrame)
 end = int((random_start + window_time) * frameRate * samplesPerFrame)
 fraction_frame_samples = int(frameRate * samplesPerFrame * 0.1)
@@ -71,24 +104,13 @@ data_Re_window = data_Re[start:end]
 data_Im_window = data_Im[start:end]
 ############################################################################################################
 # SVD for noise reduction
-data_Re_SVD = SVD_Matrix(data_Re_window, radar_parameters, 4)
-data_Im_SVD = SVD_Matrix(data_Im_window, radar_parameters, 4)
-
-# Apply high-pass filter
-cutoff_freq = 0.1  # Cancels out the DC component and low-frequency noise
-filtered_data_Re = apply_high_pass_filter(data_Re_SVD, cutoff_freq, frameRate)
-filtered_data_Im = apply_high_pass_filter(data_Im_SVD, cutoff_freq, frameRate)
-filtered_data = filtered_data_Re + 1j * filtered_data_Im
+data_Re_SVD = SVD_Matrix(data_Re_window, radar_parameters, SVD_order)
+data_Im_SVD = SVD_Matrix(data_Im_window, radar_parameters, SVD_order)
+filtered_data = data_Re_SVD + 1j * data_Im_SVD
 
 time_domain = np.linspace(random_start, random_start + window_time, filtered_data.shape[0])
-
-fft_filtered_data = np.fft.fft(filtered_data)
-fft_freq_average = np.fft.fftfreq(filtered_data.shape[0], d=1 / frameRate)
-
-# Keep only the positive half of the spectrum
-half_index = len(fft_filtered_data) // 2
-fft_filtered_data = fft_filtered_data[:half_index]
-fft_freq_average = fft_freq_average[:half_index]
+# FFT of the filtered data
+fft_filtered_data, fft_freq_average = compute_fft(filtered_data, frameRate)
 
 # Find peaks and their properties
 peaks_average, properties = find_significant_peaks(fft_filtered_data, fft_freq_average)
@@ -100,35 +122,29 @@ best_range_fft_peak_freq = select_best_peak(peaks_average, properties, fft_freq_
 window_start_peak, window_end_peak, window_start_index, window_end_index = determine_frequency_window(best_range_fft_peak_freq, fft_freq_average)
 
 phase_values = []
-for i in range(0, len(filtered_data_Re), samplesPerFrame):
+spectrogram_data = []
+fig_ani, ax = plt.subplots()
+for i in range(0, len(filtered_data), samplesPerFrame):
     # Extract a single frame
-    current_frame_Re = filtered_data_Re[i:i + samplesPerFrame]
-    current_frame_Im = filtered_data_Im[i:i + samplesPerFrame]
+    current_frame_Re = data_Re_SVD[i:i + samplesPerFrame]
+    current_frame_Im = data_Im_SVD[i:i + samplesPerFrame]
     current_frame = current_frame_Re + 1j * current_frame_Im
 
-    # Perform FFT on the current frame
-    fft_frame = np.fft.fft(current_frame)
-    fft_freq_frame = np.fft.fftfreq(samplesPerFrame, d=1 / frameRate)
+    fft_frame, fft_freq_frame = compute_fft(current_frame, frameRate)
 
     # Find peaks with initial criteria
     percentile_threshold = np.percentile(np.abs(fft_frame), 99)
     peaks, properties = find_peaks(np.abs(fft_frame), prominence=0.1, width=1, height=percentile_threshold)
 
-    # Calculate a significance score for each peak (example formula, adjust as needed)
+    # Calculate a significance score for each peak
     scores = properties['prominences'] * properties['widths'] * properties['peak_heights']
 
-    # Select the peak with the highest significance score
     if len(scores) > 0:
         best_peak_idx = np.argmax(scores)
         best_range_fft_peak_freq = fft_freq_frame[peaks[best_peak_idx]]
     else:
         print("No peaks detected.")
         best_range_fft_peak_freq = 0
-
-    # Only consider the first half of the FFT results for the positive frequencies
-    half_index_frame = len(fft_frame) // 2
-    fft_frame = fft_frame[:half_index_frame]
-    fft_freq_frame = fft_freq_frame[:half_index_frame]
 
     # Find indices of the window around the best peak frequency
     # Ensure that window_start and window_end are within the available frequency range
@@ -140,11 +156,36 @@ for i in range(0, len(filtered_data_Re), samplesPerFrame):
     window_start_index = (np.abs(fft_freq_frame - window_start)).argmin()
     window_end_index = (np.abs(fft_freq_frame - window_end)).argmin()
 
-    # Extract phase information for the window
-    phase_values_frame = np.angle(fft_frame[window_start_index:window_end_index + 1])
-    # Append to the overall phase values list
-    phase_values.extend(phase_values_frame)
+    # Clear the current figure's content before plotting the next frame
+    ax.clear()
+    ax.plot(fft_freq_frame, np.abs(fft_frame))
+    ax.axvline(x=window_start, color='k', linestyle='--', label='Window Start/End')
+    ax.axvline(x=window_end, color='k', linestyle='--')
+    ax.axvline(x=best_range_fft_peak_freq, color='g', linestyle='dotted', label='Center Peak', linewidth=2)
+    ax.set_title('FFT of Filtered ADC Data')
+    ax.set_xlabel('Frequency')
+    ax.set_ylabel('Magnitude')
+    ax.legend()
+    clear_output(wait=True)
+    display(fig_ani)
+    plt.pause(0.0001)  # Pause briefly to allow the figure to be updated
 
+    spectrogram_data.append(np.abs(fft_frame))  # Append the magnitude of the FFT result for the spectrogram
+    phase_values_frame = np.angle(fft_frame[window_start_index:window_end_index + 1])
+    phase_values.extend(phase_values_frame)  # Append to the overall phase values list
+
+spectrogram_array = np.array(spectrogram_data)
+
+# Plot the spectrogram using matplotlib
+plt.figure(figsize=(10, 4))
+plt.imshow(spectrogram_array.T, aspect='auto', origin='lower', extent=[0, len(spectrogram_data), fft_freq_frame[0], fft_freq_frame[-1]])
+plt.colorbar(label='Magnitude')
+plt.title('Spectrogram of All Chirps')
+plt.ylabel('Frequency (Hz)')
+plt.xlabel('Chirp Number')
+plt.show()
+
+plt.close(fig_ani)
 # Convert phase_values list to a NumPy array
 phase_values_array = np.array(phase_values)
 
@@ -152,6 +193,9 @@ phase_values_array = np.array(phase_values)
 phase_time = np.linspace(random_start, random_start + window_time, phase_values_array.shape[0])
 unwrap_phase = np.unwrap(phase_values)
 diff_unwrap_phase = np.diff(unwrap_phase)
+
+print("Unwrapped Phase Values: ")
+print(diff_unwrap_phase[0:10])
 
 # Assuming diff_unwrap_phase is your unwrapped differential phase array
 threshold = np.std(diff_unwrap_phase) * 2  # Example threshold: 2 times the standard deviation
@@ -176,38 +220,40 @@ if abs(forward_diff_first) > threshold:
 lambda_c = 3e8 / radar_parameters['startFreq']
 chest_displacement = ((lambda_c / (4 * np.pi)) * cleaned_diff_unwrap_phase) * 1000  # in mm
 
-# interpolation smoothing for the chest displacement
+# grab name thats after the last backslash
+name = filename.split("DCA1000EVM_")[-1]
+# remove the .csv part
+name, _ = os.path.splitext(name)
 
-chest_displacement = apply_high_pass_filter(chest_displacement, 0.1, frameRate)
-fft_chest_displacement = np.fft.fft(chest_displacement)
-fft_chest_displacement = fft_chest_displacement - np.mean(fft_chest_displacement)
-fft_phase_freq = np.fft.fftfreq(fft_chest_displacement.shape[0], d=1 / frameRate)
-half_index = len(fft_chest_displacement) // 2
-fft_chest_displacement = fft_chest_displacement[:half_index]
-fft_phase_freq = fft_phase_freq[:half_index]
+# Send the chest displacement graph to cherrypick the best waveforms
+# cherrypick(chest_displacement, phase_time[:-1], name)
 
+fft_chest_displacement, fft_phase_freq = compute_fft(chest_displacement, frameRate)
 
-def filter_and_fft(data, lowcut, highcut, fs, order):
-    filtered_data = butter_bandpass_filter(data, lowcut, highcut, fs, order=order)
-    fft_data = np.fft.fft(filtered_data)
-    fft_magnitude = np.abs(fft_data[:len(fft_data) // 2])  # Take the absolute value for the magnitude
-    fft_freqs = np.fft.fftfreq(len(filtered_data), d=1 / fs)[:len(fft_data) // 2]
-    return fft_magnitude, fft_freqs
+bandpass_chest_displacement_BR = butter_bandpass_filter(chest_displacement, 0.1, 0.8, frameRate, order=4)
+bandpass_chest_displacement_HR = butter_bandpass_filter(chest_displacement, 0.8, 4.0, frameRate, order=4)
 
+bandpass_phase_values_BR = butter_bandpass_filter(phase_values, 0.1, 0.8, frameRate, order=4)
+bandpass_phase_values_HR = butter_bandpass_filter(phase_values, 0.8, 4.0, frameRate, order=4)
 
-# Call the function for cardiac and breathing regions
-fft_band_data_cardiac, fft_band_data_cardiac_freq = filter_and_fft(chest_displacement, 0.8, 4.0, frameRate, 4)
-fft_band_data_breathing, fft_band_data_breathing_freq = filter_and_fft(chest_displacement, 0.1, 0.8, frameRate, 4)
+bandpass_unwrap_phase_BR = butter_bandpass_filter(unwrap_phase, 0.1, 0.8, frameRate, order=4)
+bandpass_unwrap_phase_HR = butter_bandpass_filter(unwrap_phase, 0.8, 4.0, frameRate, order=4)
 
-best_cardiac_freq_peaks, cardiac_freq_peaks_properties = find_significant_peaks(fft_band_data_cardiac, fft_band_data_cardiac_freq, prominence=0.1, width=1, percentile=99)
+phase_values_fft, phase_freq_fft = compute_fft(bandpass_phase_values_BR, frameRate)
+unwrap_phase_fft, unwrap_phase_freq = compute_fft(bandpass_phase_values_HR, frameRate)
+
+fft_band_data_breathing, fft_band_data_breathing_freq = compute_fft(bandpass_chest_displacement_BR, frameRate)
+fft_band_data_cardiac, fft_band_data_cardiac_freq = compute_fft(bandpass_chest_displacement_HR, frameRate)
+
 best_breathing_freq_peaks, breathing_freq_peaks_properties = find_significant_peaks(fft_band_data_breathing, fft_band_data_breathing_freq, prominence=0.1, width=1, percentile=99)
+best_cardiac_freq_peaks, cardiac_freq_peaks_properties = find_significant_peaks(fft_band_data_cardiac, fft_band_data_cardiac_freq, prominence=0.1, width=1, percentile=99)
 
 # Select the peak with the highest significance score
-best_cardiac_freq = select_best_peak(best_cardiac_freq_peaks, cardiac_freq_peaks_properties, fft_band_data_cardiac_freq)
 best_breathing_freq = select_best_peak(best_breathing_freq_peaks, breathing_freq_peaks_properties, fft_band_data_breathing_freq)
+best_cardiac_freq = select_best_peak(best_cardiac_freq_peaks, cardiac_freq_peaks_properties, fft_band_data_cardiac_freq)
 
-print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 print(f"Best Breathing Frequency: {best_breathing_freq * 60} BPM")
+print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 
 # make a big subplot for all the plots I wrote
 fig, axs = plt.subplots(4, 3, figsize=(20, 12))
@@ -219,13 +265,13 @@ axs[0, 0].set_xlabel('Time Domain')
 axs[0, 0].set_ylabel('Amplitude')
 axs[0, 0].legend()
 
-axs[0, 1].plot(filtered_data_Re[:fraction_frame_samples], label='Real')
-axs[0, 1].plot(filtered_data_Im[:fraction_frame_samples], label='Imaginary')
+axs[0, 1].plot(data_Re_SVD[:fraction_frame_samples], label='Real')
+axs[0, 1].plot(data_Im_SVD[:fraction_frame_samples], label='Imaginary')
 axs[0, 1].set_title('Part of Filtered ADC Data')
 axs[0, 1].set_xlabel('Time Domain')
 axs[0, 1].set_ylabel('Amplitude')
 
-axs[0, 2].plot(data_FFT_freq, data_FFT)
+axs[0, 2].plot(data_FFT_freq, data_fft)
 axs[0, 2].set_title('FFT of ADC Data')
 axs[0, 2].set_xlabel('Frequency')
 axs[0, 2].set_ylabel('Magnitude')
@@ -260,14 +306,14 @@ axs[2, 1].set_title('FFT of Chest Displacement')
 axs[2, 1].set_xlabel('Frequency (BPM)')
 axs[2, 1].set_ylabel('Magnitude')
 
-axs[2, 2].plot(fft_band_data_breathing_freq * 60, fft_band_data_breathing)
+axs[2, 2].plot(fft_band_data_breathing_freq * 60, np.abs(fft_band_data_breathing))
 axs[2, 2].axvline(x=best_breathing_freq * 60, color='g', linestyle='dotted', label='Breathing Frequency', linewidth=2)
 axs[2, 2].annotate('Best Breathing Frequency = %.2f' % (best_breathing_freq * 60), xy=(0.30, 0.85), xycoords='axes fraction', color='green', fontsize=14, weight='bold')
 axs[2, 2].set_title('Breathing Region Filtered Data')
 axs[2, 2].set_xlabel('Frequency (BPM)')
 axs[2, 2].set_ylabel('Magnitude')
 
-axs[3, 0].plot(fft_band_data_cardiac_freq * 60, fft_band_data_cardiac)
+axs[3, 0].plot(fft_band_data_cardiac_freq * 60, np.abs(fft_band_data_cardiac))
 axs[3, 0].axvline(x=best_cardiac_freq * 60, color='g', linestyle='dotted', label='Cardiac Frequency', linewidth=2)
 axs[3, 0].annotate('Best Cardiac Frequency = %.2f' % (best_cardiac_freq * 60), xy=(0.30, 0.85), xycoords='axes fraction', color='green', fontsize=14, weight='bold')
 axs[3, 0].set_title('Cardiac Region Filtered Data')
@@ -295,6 +341,19 @@ if filename_truth_Br is not None and filename_truth_HR is not None:
     average_HR = np.mean(data_HR[random_start: random_start + window_time])
     # Annotate the average Heart Rate
     axs[3, 2].annotate('Average HR = %.2f' % average_HR, xy=(0.30, 0.85), xycoords='axes fraction', color='red', fontsize=14, weight='bold')
+
+# phase_values_fft, phase_freq_fft = compute_fft(phase_values, frameRate)
+# unwrap_phase_fft, unwrap_phase_freq = compute_fft(unwrap_phase, frameRate)
+fig2, ax2 = plt.subplots(2, 2)
+ax2[0, 0].plot(phase_freq_fft * 60, np.abs(phase_values_fft))
+ax2[0, 0].set_title('FFT of Phase Values in Breathing Region')
+ax2[0, 0].set_xlabel('BPM')
+ax2[0, 0].set_ylabel('Magnitude')
+
+ax2[0, 1].plot(unwrap_phase_freq * 60, np.abs(unwrap_phase_fft))
+ax2[0, 1].set_title('FFT of Phase Values in Cardiac Region')
+ax2[0, 1].set_xlabel('BPM')
+ax2[0, 1].set_ylabel('Magnitude')
 
 plt.tight_layout()
 plt.show()
