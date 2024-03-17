@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from scipy.constants import c
 from scipy.signal import find_peaks
 
-from cherrypicker import cherrypick
+
 from filter_processing import apply_high_pass_filter, butter_bandpass_filter, lowpass_filter
 from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
@@ -224,9 +224,6 @@ chest_displacement = ((lambda_c / (4 * np.pi)) * cleaned_diff_unwrap_phase) * 10
 name = filename.split("DCA1000EVM_")[-1]
 # remove the .csv part
 name, _ = os.path.splitext(name)
-
-# Send the chest displacement graph to cherrypick the best waveforms
-# cherrypick(chest_displacement, phase_time[:-1], name)
 
 fft_chest_displacement, fft_phase_freq = compute_fft(chest_displacement, frameRate)
 
