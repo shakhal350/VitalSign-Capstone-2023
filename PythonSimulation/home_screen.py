@@ -1,16 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import CENTER
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from PIL import ImageTk, Image
 from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
 import plotting
-import pandas as pd
 import csv
 import LoadingScreenGif as LSG
-from GradientFrame import GradientFrame
-from  process_raw_data import readDCA1000
+from process_raw_data import readDCA1000
+
 
 class VitalSignsGUI:
     def __init__(self, root):
@@ -21,6 +18,7 @@ class VitalSignsGUI:
         self.userHeight = tk.StringVar()
         self.settings_frame = ttk.Frame(self.root, padding="10")
         self.main_frame = ttk.Frame(self.root, padding="10")
+        self.main_dev_frame = ttk.Frame(self.root, padding="10")
         self.splashFrame = ttk.Frame(self.root)
         self.startup = True
         self.loadingGif = LSG.LoadingScreenGif(self.splashFrame, self.startup)
@@ -29,6 +27,7 @@ class VitalSignsGUI:
         self.root.geometry("1220x640")
         self.settings_frame.pack_forget()
         self.main_frame.pack_forget()
+        self.main_dev_frame.pack_forget()
         self.splashFrame.pack()
 
         self.loadingGif.pack()
@@ -43,8 +42,8 @@ class VitalSignsGUI:
         if self.startup:
             self.splashFrame.after(1000)
             self.loadingGif.canvas.delete(self.loadingGif.final)
-        self.Record = tk.Button(root, text="Record Vitals", command=self.record_button, background="#FFF8ED")
-        self.Vital = tk.Button(root, text="Access Vital Signs", command=self.home_screen, background="#FFF8ED")
+        self.Record = tk.Button(root, text="Record Vitals", background="#FFF8ED")
+        self.Vital = tk.Button(root, text="Access Vital Signs", command=self.view_data, background="#FFF8ED")
         self.Settings = tk.Button(root, text="Settings", command=self.settingsPage, background="#FFF8ED")
         self.Quit = tk.Button(root, text="Quit", command=self.root.destroy, background="#FFF8ED")
 
@@ -60,14 +59,14 @@ class VitalSignsGUI:
 
         self.loadingGif.secondTime()
 
-    def record_button(self):
-        # Example call, replace paths with your desired file paths or use dialog to select files
-        fileName = r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin"
-        csvFileName = r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv"
-        readDCA1000(fileName, csvFileName)
 
+    # def record_button(self):
+    #     # Example call, replace paths with your desired file paths or use dialog to select files
+    #     fileName = r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin"
+    #     csvFileName = r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv"
+    #     readDCA1000(fileName, csvFileName)
 
-    def home_screen(self):
+    def view_data(self):
 
         self.root.geometry("1620x670")
 
@@ -76,6 +75,7 @@ class VitalSignsGUI:
 
         self.splashFrame.pack_forget()
         self.settings_frame.pack_forget()
+        self.main_dev_frame.pack_forget()
         self.main_frame.pack(side="top", fill="both", expand=True)
 
         heart_rate_label = ttk.Label(
@@ -103,22 +103,83 @@ class VitalSignsGUI:
 
         # View physiological history button
         view_history_button = ttk.Button(
-            self.main_frame, text="View Physiological History")
+            self.main_frame, text="Developer Mode", command=self.view_data_dev)
+        view_history_button.config(width=20)
         view_history_button.grid(row=3, column=0, columnspan=2)
 
         # Patient Info button
         view_settings_button = ttk.Button(
-            self.main_frame, text="View Patient Information", command=self.settingsPage)
+            self.main_frame, text="Settings", command=self.settingsPage)
+        view_settings_button.config(width=20)
         view_settings_button.grid(row=4, column=0, columnspan=2)
 
         back_home_button = ttk.Button(
-            self.main_frame, text="Back Home", command=self.splashScreen)
+            self.main_frame, text="Go Back Home", command=self.splashScreen)
+        back_home_button.config(width=20)
         back_home_button.grid(row=5, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
 
         #self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
                            #line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
+
+    def view_data_dev(self):
+
+        self.root.geometry("1620x670")
+
+        if self.startup == True:
+            self.startup = False
+
+        self.splashFrame.pack_forget()
+        self.settings_frame.pack_forget()
+        self.main_frame.pack_forget()
+        self.main_dev_frame.pack(side="top", fill="both", expand=True)
+
+        heart_rate_label = ttk.Label(
+            self.main_dev_frame, text="Heart Rate", font=("Arial", 18))
+        heart_rate_value = ttk.Label(
+            self.main_dev_frame, text="80 bpm", font=("Arial", 24), foreground="red")
+        heart_rate_label.grid(row=0, column=0, sticky="w")
+        heart_rate_value.grid(row=1, column=0, sticky="w")
+
+        respiratory_rate_label = ttk.Label(
+            self.main_dev_frame, text="Respiratory Rate", font=("Arial", 18))
+        respiratory_rate_value = ttk.Label(
+            self.main_dev_frame, text="18 breaths/min", font=("Arial", 24), foreground="blue")
+        respiratory_rate_label.grid(row=0, column=1, sticky="w")
+        respiratory_rate_value.grid(row=1, column=1, sticky="w")
+
+        # fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
+        # plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame) # Embedding the plot in the Tkinter window
+        # plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
+        #
+        # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
+        #     2)
+        # plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame) # Embedding the plot in the Tkinter window
+        # plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
+
+        # View physiological history button
+        view_history_button = ttk.Button(
+            self.main_dev_frame, text="Default Mode", command=self.view_data)
+        view_history_button.config(width=20)
+        view_history_button.grid(row=3, column=0, columnspan=2)
+
+        # Patient Info button
+        view_settings_button = ttk.Button(
+            self.main_dev_frame, text="Settings", command=self.settingsPage)
+        view_settings_button.config(width=20)
+        view_settings_button.grid(row=4, column=0, columnspan=2)
+
+        back_home_button = ttk.Button(
+            self.main_dev_frame, text="Go Back Home", command=self.splashScreen)
+        back_home_button.config(width=20)
+        back_home_button.grid(row=5, column=0, columnspan=2)
+
+        # You might want to run the animation as part of the GUI initialization
+
+        #self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
+                           #line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
+
     def settingsPage(self):
 
         self.root.geometry("540x320")
@@ -164,7 +225,7 @@ class VitalSignsGUI:
         height_entry.grid(row=3, column=1, sticky="w")
 
         go_back_button = ttk.Button(
-            self.settings_frame, text="Back to Vitals", command=self.home_screen)
+            self.settings_frame, text="Back to Vitals", command=self.view_data)
         go_back_button.grid(row=0, column=2, columnspan=2)
 
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(
@@ -270,5 +331,5 @@ if __name__ == "__main__":
     root.title("Vital Signs Monitor")
     app = VitalSignsGUI(root)
     root.after(0,app.splashScreen)
-    #root.after(6000, app.home_screen)
+    #root.after(6000, app.view_data)
     root.mainloop()
