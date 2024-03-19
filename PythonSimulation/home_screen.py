@@ -3,7 +3,7 @@ from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
-import plotting
+from TestData import setup_plots
 import csv
 import LoadingScreenGif as LSG
 from process_raw_data import readDCA1000
@@ -92,14 +92,15 @@ class VitalSignsGUI:
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
 
-        fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
-        plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame) # Embedding the plot in the Tkinter window
+        # fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
+        fig, ax1, ax2, line1, line2 = setup_plots(1, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
+        plot1 = FigureCanvasTkAgg(fig, master=self.main_frame) # Embedding the plot in the Tkinter window
         plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
 
-        fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
-            2)
-        plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame) # Embedding the plot in the Tkinter window
-        plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
+        # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
+        #     2)
+        # plot2 = FigureCanvasTkAgg(fig, master=self.main_frame) # Embedding the plot in the Tkinter window
+        # plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
 
         # View physiological history button
         view_history_button = ttk.Button(
@@ -283,13 +284,13 @@ class VitalSignsGUI:
         data_Re = SVD_Matrix(data_Re, radar_parameters, 2)
         data_Im = SVD_Matrix(data_Im, radar_parameters, 2)
 
-        plotting.create_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6,
-                                  label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval,
-                                  timeWindowMultiplier=5)
+        # plotting.create_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6,
+        #                           label1, label2, data_Re, data_Im, radar_parameters, animation_update_interval,
+        #                           timeWindowMultiplier=5)
 
     def create_plot(self, data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier=1):
-        self.fig, self.animation1, self.animation2 = create_animation(
-            data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier)
+        # self.fig, self.animation1, self.animation2 = create_animation(
+        #     data_Re, data_Im, radar_parameters, update_interval, timeWindowMultiplier)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.draw()
