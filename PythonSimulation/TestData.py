@@ -256,6 +256,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         ax2.set_ylim(int(np.min(cleaned_chest_displacement)) - 1, int(np.max(cleaned_chest_displacement)) + 1)
 
         plt.tight_layout()
+        plt.savefig('DefCharts.png')
         return fig1, ax1, ax2, line1, line2, best_breathing_freq * 60, best_cardiac_freq * 60
     elif plotnumber == 2:
         fig2, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4, figsize=(20, 10))
@@ -324,6 +325,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         ax8.set_ylim(0, int(np.max(np.abs(fft_band_data_cardiac))))
 
         plt.tight_layout()
+        plt.savefig('DevCharts.png')
         return fig2, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, line1, line2, line3, line4, line5, line6, line7, best_breathing_freq * 60, best_cardiac_freq * 60
 
 # # make a big subplot for all the plots
