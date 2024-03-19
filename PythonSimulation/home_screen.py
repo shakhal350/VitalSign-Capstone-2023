@@ -26,7 +26,7 @@ class VitalSignsGUI:
         self.loadingGif = LSG.LoadingScreenGif(self.splashFrame, self.startup)
 
     def splashScreen(self):
-
+        self.root.geometry("1220x640")
         self.settings_frame.pack_forget()
         self.main_frame.pack_forget()
         self.splashFrame.pack()
@@ -48,10 +48,10 @@ class VitalSignsGUI:
         self.Settings = tk.Button(root, text="Settings", command=self.settingsPage, background="#FFF8ED")
         self.Quit = tk.Button(root, text="Quit", command=self.root.destroy, background="#FFF8ED")
 
-        self.Record.config(width=10,padx=0,pady=0)
-        self.Settings.config(width=10,padx=0,pady=0)
-        self.Vital.config(width=10, padx=0, pady=0)
-        self.Quit.config(width=10, padx=0, pady=0)
+        self.Record.config(width=15,padx=0,pady=0, bg="#7DC7F1")
+        self.Settings.config(width=15,padx=0,pady=0, bg="#7DC7F1")
+        self.Vital.config(width=15, padx=0, pady=0, bg="#7DC7F1")
+        self.Quit.config(width=15, padx=0, pady=0, bg="#7DC7F1")
 
         self.RecordButton = self.loadingGif.canvas.create_window(610, 480, window=self.Record)
         self.VitalButton = self.loadingGif.canvas.create_window(610, 510, window=self.Vital)
@@ -68,6 +68,8 @@ class VitalSignsGUI:
 
 
     def home_screen(self):
+
+        self.root.geometry("1620x670")
 
         if self.startup == True:
             self.startup = False
@@ -119,6 +121,8 @@ class VitalSignsGUI:
                            #line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
     def settingsPage(self):
 
+        self.root.geometry("540x320")
+
         if self.startup == True:
             self.startup = False
 
@@ -161,20 +165,20 @@ class VitalSignsGUI:
 
         go_back_button = ttk.Button(
             self.settings_frame, text="Back to Vitals", command=self.home_screen)
-        go_back_button.grid(row=1, column=2, columnspan=2)
+        go_back_button.grid(row=0, column=2, columnspan=2)
 
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(
             age_entry, weight_entry, height_entry))
 
-        save_button.grid(row=2, column=2, columnspan=2)
+        save_button.grid(row=1, column=2, columnspan=2)
 
         edit_button = ttk.Button(self.settings_frame, text="Edit", command=lambda: self.edit(
             age_entry, weight_entry, height_entry))
-        edit_button.grid(row=3, column=2, columnspan=2)
+        edit_button.grid(row=2, column=2, columnspan=2)
 
         back_home_button = ttk.Button(
             self.settings_frame, text="Back Home", command=self.splashScreen)
-        back_home_button.grid(row=4, column=2, columnspan=2)
+        back_home_button.grid(row=3, column=2, columnspan=2)
 
 
     def readValues(self, age_entry, sex_entry, weight_entry, height_entry):
