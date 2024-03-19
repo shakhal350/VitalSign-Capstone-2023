@@ -19,14 +19,26 @@ class VitalSignsGUI:
         self.userGender = tk.StringVar()
         self.userWeight = tk.StringVar()
         self.userHeight = tk.StringVar()
+
         self.settings_frame = ttk.Frame(self.root, padding="10")
-        self.main_frame = ttk.Frame(self.root, padding="10")
-        self.main_dev_frame = ttk.Frame(self.root, padding="10")
+        self.main_frame = ttk.Frame(self.root)
+        self.main_dev_frame = ttk.Frame(self.root)
         self.splashFrame = ttk.Frame(self.root)
+
+        self.canvas = GradientFrame(self.main_frame, from_color="#FFFFFF", to_color="#9BA5EE", width=17000, height=700,
+                                    borderwidth=0)
+        self.canvas2 = GradientFrame(self.main_frame, from_color="#FFFFFF", to_color="#9BA5EE", width=17000, height=700,
+                                    borderwidth=0)
+
         self.startup = True
+        self.startupDefData = True
+
         self.loadingGif = LSG.LoadingScreenGif(self.splashFrame, self.startup)
-        self.ImgDef = Image.open("DefCharts.png").resize((800, 500))
+
+        self.ImgDef = Image.open("DefCharts.png").resize((1620, 500))
         self.ImageDef = ImageTk.PhotoImage(self.ImgDef)
+        self.ImgDev = Image.open("DevCharts.png").resize((1620, 500))
+        self.ImageDev = ImageTk.PhotoImage(self.ImgDev)
 
     def splashScreen(self):
         self.root.geometry("1220x640")
@@ -81,23 +93,25 @@ class VitalSignsGUI:
         self.settings_frame.pack_forget()
         self.main_dev_frame.pack_forget()
         self.main_frame.pack(side="top", fill="both", expand=True)
+        self.canvas2.pack_forget()
 
         elf.canvas = GradientFrame(self.main_frame, from_color="#FFFFFF", to_color="#9BA5EE", width=17000, height=700, borderwidth=0)
 
         self.respiratory_rate_label = self.canvas.create_text(200, 150, text="Respiratory Rate", font=("Arial", 24), fill="#003771")
         self.respiratory_rate_value = self.canvas.create_text(200, 200, text="18 breaths/min", font=("Arial", 36), fill="blue")
 
-        self.heart_rate_label = self.canvas.create_text(200, 400, text="Heart Rate", font=("Arial", 24), fill="#003771")
-        self.heart_rate_value = self.canvas.create_text(200, 450, text="80 BPM", font=("Arial", 36), fill="red")
+        self.heart_rate_label = self.canvas.create_text(1000, 50, text="Heart Rate", font=("Arial", 24), fill="#003771")
+        self.heart_rate_value = self.canvas.create_text(1000, 100, text="80 BPM", font=("Arial", 36), fill="red")
 
         # fig, ax1, ax2, line1, line2 = setup_plots(1, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
 
+        fig1, ax1, ax2, line1, line2, best_breathing_freq, best_cardiac_freq = setup_plots(1, r"DCA1000EVM_grace2_shallow_BR.csv")
 
-        if self.startupDefData:
-            fig, ax1, ax2, line1, line2 = setup_plots(1, r"DCA1000EVM_grace2_shallow_BR.csv")
-            self.startupDefData = False
+        self.canvas.itemconfigure(self.respiratory_rate_value, text=str(int(best_breathing_freq)) + " breaths/min")
+        self.canvas.itemconfigure(self.heart_rate_value, text=str(int(best_cardiac_freq)) + " BPM")
 
-
+        self.ImgDef = Image.open("DefCharts.png").resize((1620, 500))
+        self.ImageDef = ImageTk.PhotoImage(self.ImgDef)
         self.graph = self.canvas.create_image(820, 300, image=self.ImageDef)
 
         self.devMode = tk.Button(self.main_frame, text="Developer Mode", command= self.view_data_dev, background="#7DC7F1")
@@ -109,7 +123,7 @@ class VitalSignsGUI:
         self.goBack.config(width=25, padx=0, pady=0, bg="#7DC7F1")
 
         self.devModeButton = self.canvas.create_window(1400, 480, window=self.devMode)
-        self.settingsButton = self.canvas.create_window(1400, 510, window=self.settings2)
+        self.settingsButton2 = self.canvas.create_window(1400, 80, window=self.settings2)
         self.goBackButton = self.canvas.create_window(1400, 540, window=self.goBack)
         self.canvas.pack()
 
@@ -149,54 +163,88 @@ class VitalSignsGUI:
 
         self.root.geometry("1620x670")
 
-        if self.startup == True:
-            self.startup = False
-
         self.splashFrame.pack_forget()
         self.settings_frame.pack_forget()
         self.main_frame.pack_forget()
         self.main_dev_frame.pack(side="top", fill="both", expand=True)
+        self.canvas.pack_forget()
 
-        heart_rate_label = ttk.Label(
-            self.main_dev_frame, text="Heart Rate", font=("Arial", 18))
-        heart_rate_value = ttk.Label(
-            self.main_dev_frame, text="80 bpm", font=("Arial", 24), foreground="red")
-        heart_rate_label.grid(row=0, column=0, sticky="w")
-        heart_rate_value.grid(row=1, column=0, sticky="w")
+        self.canvas2 = GradientFrame(self.main_dev_frame, from_color="#FFFFFF", to_color="#9BA5EE", width=17000, height=700,
+                                    borderwidth=0)
 
-        respiratory_rate_label = ttk.Label(
-            self.main_dev_frame, text="Respiratory Rate", font=("Arial", 18))
-        respiratory_rate_value = ttk.Label(
-            self.main_dev_frame, text="18 breaths/min", font=("Arial", 24), foreground="blue")
-        respiratory_rate_label.grid(row=0, column=1, sticky="w")
-        respiratory_rate_value.grid(row=1, column=1, sticky="w")
+        self.respiratory_rate_label2 = self.canvas2.create_text(200, 50, text="Respiratory Rate", font=("Arial", 24),
+                                                              fill="#003771")
+        self.respiratory_rate_value2 = self.canvas2.create_text(200, 100, text="18 breaths/min", font=("Arial", 36),
+                                                              fill="blue")
 
-        fig, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, line1, line2, line3, line4, line5, line6, line7, breathingRate, heartRate \
-            = setup_plots(2, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
-        plot1 = FigureCanvasTkAgg(fig, master=self.main_dev_frame)  # Embedding the plot in the Tkinter window
-        plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
+        self.heart_rate_label2 = self.canvas2.create_text(1000, 50, text="Heart Rate", font=("Arial", 24), fill="#003771")
+        self.heart_rate_value2 = self.canvas2.create_text(1000, 100, text="80 BPM", font=("Arial", 36), fill="red")
+
+
+        fig2, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, line1, line2, line3, line4, line5, line6, line7, best_breathing_freq, best_cardiac_freq = setup_plots(2, r"DCA1000EVM_grace2_shallow_BR.csv")
+
+        self.canvas2.itemconfigure(self.respiratory_rate_value2, text=str(int(best_breathing_freq)) + " breaths/min")
+        self.canvas2.itemconfigure(self.heart_rate_value2, text=str(int(best_cardiac_freq)) + " BPM")
+
+        self.ImgDev = Image.open("DevCharts.png").resize((1620, 500))
+        self.ImageDev = ImageTk.PhotoImage(self.ImgDev)
+        self.graph2 = self.canvas2.create_image(810, 420, image=self.ImageDev)
+
+        self.defMode = tk.Button(self.main_dev_frame, text="Default Mode", command=self.view_data,
+                                 background="#7DC7F1")
+        self.settings3 = tk.Button(self.main_dev_frame, text="Settings", command=self.settingsPage, background="#FFF8ED")
+        self.goBack2 = tk.Button(self.main_dev_frame, text="Go Back to Home Menu", command=self.splashScreen,
+                                background="#FFF8ED")
+
+        self.defMode.config(width=25, padx=0, pady=0, bg="#7DC7F1")
+        self.settings2.config(width=25, padx=0, pady=0, bg="#7DC7F1")
+        self.goBack2.config(width=25, padx=0, pady=0, bg="#7DC7F1")
+
+        self.defModeButton = self.canvas2.create_window(1400, 50, window=self.defMode)
+        self.settingsButton3 = self.canvas2.create_window(1400, 80, window=self.settings3)
+        self.goBackButton2 = self.canvas2.create_window(1400, 110, window=self.goBack2)
+        self.canvas2.pack()
+
+        # heart_rate_label = ttk.Label(
+        #     self.main_dev_frame, text="Heart Rate", font=("Arial", 18))
+        # heart_rate_value = ttk.Label(
+        #     self.main_dev_frame, text="80 bpm", font=("Arial", 24), foreground="red")
+        # heart_rate_label.grid(row=0, column=0, sticky="w")
+        # heart_rate_value.grid(row=1, column=0, sticky="w")
         #
-        # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
-        #     2)
-        # plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame) # Embedding the plot in the Tkinter window
-        # plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
-
-        # View physiological history button
-        view_history_button = ttk.Button(
-            self.main_dev_frame, text="Default Mode", command=self.view_data)
-        view_history_button.config(width=20)
-        view_history_button.grid(row=3, column=0, columnspan=2)
-
-        # Patient Info button
-        view_settings_button = ttk.Button(
-            self.main_dev_frame, text="Settings", command=self.settingsPage)
-        view_settings_button.config(width=20)
-        view_settings_button.grid(row=4, column=0, columnspan=2)
-
-        back_home_button = ttk.Button(
-            self.main_dev_frame, text="Go Back Home", command=self.splashScreen)
-        back_home_button.config(width=20)
-        back_home_button.grid(row=5, column=0, columnspan=2)
+        # respiratory_rate_label = ttk.Label(
+        #     self.main_dev_frame, text="Respiratory Rate", font=("Arial", 18))
+        # respiratory_rate_value = ttk.Label(
+        #     self.main_dev_frame, text="18 breaths/min", font=("Arial", 24), foreground="blue")
+        # respiratory_rate_label.grid(row=0, column=1, sticky="w")
+        # respiratory_rate_value.grid(row=1, column=1, sticky="w")
+        #
+        # #fig, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, line1, line2, line3, line4, line5, line6, line7, breathingRate, heartRate \
+        #     #= setup_plots(2, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
+        # plot1 = FigureCanvasTkAgg(fig, master=self.main_dev_frame)  # Embedding the plot in the Tkinter window
+        # plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
+        # #
+        # # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
+        # #     2)
+        # # plot2 = FigureCanvasTkAgg(fig2, master=self.main_frame) # Embedding the plot in the Tkinter window
+        # # plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
+        #
+        # # View physiological history button
+        # view_history_button = ttk.Button(
+        #     self.main_dev_frame, text="Default Mode", command=self.view_data)
+        # view_history_button.config(width=20)
+        # view_history_button.grid(row=3, column=0, columnspan=2)
+        #
+        # # Patient Info button
+        # view_settings_button = ttk.Button(
+        #     self.main_dev_frame, text="Settings", command=self.settingsPage)
+        # view_settings_button.config(width=20)
+        # view_settings_button.grid(row=4, column=0, columnspan=2)
+        #
+        # back_home_button = ttk.Button(
+        #     self.main_dev_frame, text="Go Back Home", command=self.splashScreen)
+        # back_home_button.config(width=20)
+        # back_home_button.grid(row=5, column=0, columnspan=2)
 
         # You might want to run the animation as part of the GUI initialization
 
