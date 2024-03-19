@@ -235,7 +235,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
     print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 
     if plotnumber == 1:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 5))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4))
         line1, = ax1.plot([], [], lw=1)
         line2, = ax2.plot([], [], lw=1)
         line1.set_data(phase_time, unwrap_phase)
@@ -282,7 +282,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         ax4.set_ylabel('Magnitude')
 
         plt.tight_layout()
-        return fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4
+        return fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4, best_breathing_freq * 60, best_cardiac_freq * 60
 
 # # make a big subplot for all the plots
 # fig, axs = plt.subplots(4, 3, figsize=(20, 12))
