@@ -40,8 +40,8 @@ def readDCA1000(fileName, csvFileName):
 
     # Save the formatted DataFrame to CSV without index
     formatted_df.to_csv(csvFileName, index=False)
-
+    print(f"Data saved to {csvFileName}")
     return adcData
 
 
-readDCA1000(r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin", r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv")  # Enter file path
+readDCA1000(r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin", r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\ChestDisplacementData\March13th_Shayan_test\3\DCA1000EVM_Shayan_Shower_20Br_140Hr.csv")  # Enter file path
