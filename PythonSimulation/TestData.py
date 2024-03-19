@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.constants import c
 from scipy.signal import find_peaks
-from IPython.display import display, clear_output
 
 from filter_processing import apply_high_pass_filter, butter_bandpass_filter, lowpass_filter
 from SVD_processing import SVD_Matrix
