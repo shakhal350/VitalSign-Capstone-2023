@@ -241,7 +241,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         line1.set_data(phase_time, unwrap_phase)
         line2.set_data(phase_time[:-1], cleaned_chest_displacement)
 
-        ax1.annotate('Best Breathing Frequency = %.2f' % (best_breathing_freq * 60), xy=(0.10, 0.85), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
+        # ax1.annotate('Best Breathing Frequency = %.2f' % (best_breathing_freq * 60), xy=(0.10, 0.85), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
         ax1.set_title('Breathing Rate')
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Magnitude')
@@ -249,7 +249,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         print(np.min(unwrap_phase), np.max(unwrap_phase))
         ax1.set_ylim(int(np.min(unwrap_phase)) - 1, int(np.max(unwrap_phase)) + 1)
 
-        ax2.annotate('Best Cardiac Frequency = %.2f' % (best_cardiac_freq * 60), xy=(0.10, 0.85), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
+        # ax2.annotate('Best Cardiac Frequency = %.2f' % (best_cardiac_freq * 60), xy=(0.10, 0.85), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
         ax2.set_title('Heart Rate')
         ax2.set_xlabel('Time')
         ax2.set_ylabel('Magnitude')
@@ -257,7 +257,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         ax2.set_ylim(int(np.min(cleaned_chest_displacement)) - 1, int(np.max(cleaned_chest_displacement)) + 1)
 
         plt.tight_layout()
-        return fig, ax1, ax2, line1, line2
+        return fig, ax1, ax2, line1, line2, best_breathing_freq * 60, best_cardiac_freq * 60
     elif plotnumber == 2:
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(8, 5))
         line1, = ax1.plot([], [], lw=2)

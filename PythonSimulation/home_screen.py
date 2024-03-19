@@ -32,10 +32,10 @@ class VitalSignsGUI:
 
         self.loadingGif.pack()
         if self.startup:
-            self.splashFrame.after(0,self.loadingGif.update,self.splashFrame, 0)
+            self.splashFrame.after(0, self.loadingGif.update, self.splashFrame, 0)
             self.splashFrame.after(5000, self.loadingScreenUpdate)
         else:
-            self.splashFrame.after(0,self.loadingScreenUpdate)
+            self.splashFrame.after(0, self.loadingScreenUpdate)
 
     def loadingScreenUpdate(self):
 
@@ -47,8 +47,8 @@ class VitalSignsGUI:
         self.Settings = tk.Button(root, text="Settings", command=self.settingsPage, background="#FFF8ED")
         self.Quit = tk.Button(root, text="Quit", command=self.root.destroy, background="#FFF8ED")
 
-        self.Record.config(width=15,padx=0,pady=0, bg="#7DC7F1")
-        self.Settings.config(width=15,padx=0,pady=0, bg="#7DC7F1")
+        self.Record.config(width=15, padx=0, pady=0, bg="#7DC7F1")
+        self.Settings.config(width=15, padx=0, pady=0, bg="#7DC7F1")
         self.Vital.config(width=15, padx=0, pady=0, bg="#7DC7F1")
         self.Quit.config(width=15, padx=0, pady=0, bg="#7DC7F1")
 
@@ -58,7 +58,6 @@ class VitalSignsGUI:
         self.QuitButton = self.loadingGif.canvas.create_window(610, 570, window=self.Quit)
 
         self.loadingGif.secondTime()
-
 
     # def record_button(self):
     #     # Example call, replace paths with your desired file paths or use dialog to select files
@@ -93,8 +92,8 @@ class VitalSignsGUI:
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
 
         # fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
-        fig, ax1, ax2, line1, line2 = setup_plots(1, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
-        plot1 = FigureCanvasTkAgg(fig, master=self.main_frame) # Embedding the plot in the Tkinter window
+        fig, ax1, ax2, line1, line2, breathingRate, heartRate = setup_plots(1, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
+        plot1 = FigureCanvasTkAgg(fig, master=self.main_frame)  # Embedding the plot in the Tkinter window
         plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
 
         # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
@@ -121,8 +120,8 @@ class VitalSignsGUI:
 
         # You might want to run the animation as part of the GUI initialization
 
-        #self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
-                           #line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
+        # self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
+        # line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
 
     def view_data_dev(self):
 
@@ -178,8 +177,8 @@ class VitalSignsGUI:
 
         # You might want to run the animation as part of the GUI initialization
 
-        #self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
-                           #line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
+        # self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
+        # line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
 
     def settingsPage(self):
 
@@ -200,7 +199,6 @@ class VitalSignsGUI:
             self.settings_frame, text="Weight", font=("Arial", 20))
         height_label = ttk.Label(
             self.settings_frame, text="Height", font=("Arial", 20))
-
 
         options = ["", "Undisclosed", "Male", "Female"]
 
@@ -242,7 +240,6 @@ class VitalSignsGUI:
             self.settings_frame, text="Back Home", command=self.splashScreen)
         back_home_button.grid(row=3, column=2, columnspan=2)
 
-
     def readValues(self, age_entry, sex_entry, weight_entry, height_entry):
         with open("settingsinfo.csv", "r") as csvfile:
             reader = csv.reader(csvfile)
@@ -272,7 +269,6 @@ class VitalSignsGUI:
         weight_entry.config(state="enabled")
         height_entry.config(state="enabled")
 
-
     def run_animation(self, fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6, label1, label2):
 
         filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_shayan_normal_breathing.csv"
@@ -300,23 +296,29 @@ class VitalSignsGUI:
 
     def setAge(self, age):
         self.userAge = age
+
     def setGender(self, gender):
         self.userGender = gender
+
     def setWeight(self, weight):
         self.userWeight = weight
+
     def setHeight(self, height):
         self.userHeight = height
 
     def getAge(self):
         return self.userAge
+
     def getGender(self):
         return self.userGender
+
     def getWeight(self):
         return self.userWeight
+
     def getHeight(self):
         return self.userHeight
 
-    def update(self,i,label):
+    def update(self, i, label):
         self.frame = self.gif[i]
         print(self.frame)
         if i == 29:
@@ -326,11 +328,12 @@ class VitalSignsGUI:
         label.config(image=self.frame)
         self.splashFrame.after(50, self.update, i, label)
 
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("1220x640")
     root.title("Vital Signs Monitor")
     app = VitalSignsGUI(root)
-    root.after(0,app.splashScreen)
-    #root.after(6000, app.view_data)
+    root.after(0, app.splashScreen)
+    # root.after(6000, app.view_data)
     root.mainloop()
