@@ -91,15 +91,9 @@ class VitalSignsGUI:
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
 
-        # fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
         fig, ax1, ax2, line1, line2, breathingRate, heartRate = setup_plots(1, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
         plot1 = FigureCanvasTkAgg(fig, master=self.main_frame)  # Embedding the plot in the Tkinter window
         plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
-
-        # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
-        #     2)
-        # plot2 = FigureCanvasTkAgg(fig, master=self.main_frame) # Embedding the plot in the Tkinter window
-        # plot2.get_tk_widget().grid(row=2, column=1, sticky="ew")
 
         # View physiological history button
         view_history_button = ttk.Button(
@@ -117,11 +111,6 @@ class VitalSignsGUI:
             self.main_frame, text="Go Back Home", command=self.splashScreen)
         back_home_button.config(width=20)
         back_home_button.grid(row=5, column=0, columnspan=2)
-
-        # You might want to run the animation as part of the GUI initialization
-
-        # self.run_animation(fig1, ax1, ax2, line1, line2, fig2, ax3, ax4, line3,
-        # line4, ax5, ax6, line5, line6, heart_rate_value, respiratory_rate_value)
 
     def view_data_dev(self):
 
@@ -149,9 +138,10 @@ class VitalSignsGUI:
         respiratory_rate_label.grid(row=0, column=1, sticky="w")
         respiratory_rate_value.grid(row=1, column=1, sticky="w")
 
-        # fig1, ax1, ax2, line1, line2 = plotting.setup_plots(1)
-        # plot1 = FigureCanvasTkAgg(fig1, master=self.main_frame) # Embedding the plot in the Tkinter window
-        # plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
+        fig, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, line1, line2, line3, line4, line5, line6, line7, breathingRate, heartRate \
+            = setup_plots(2, r"C:\Users\Shaya\Downloads\DCA1000EVM_grace2_shallow_BR.csv")
+        plot1 = FigureCanvasTkAgg(fig, master=self.main_dev_frame)  # Embedding the plot in the Tkinter window
+        plot1.get_tk_widget().grid(row=2, column=0, sticky="ew")
         #
         # fig2, ax3, ax4, line3, line4, ax5, ax6, line5, line6 = plotting.setup_plots(
         #     2)

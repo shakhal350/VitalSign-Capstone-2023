@@ -235,7 +235,7 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
     print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 
     if plotnumber == 1:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4))
+        fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4))
         line1, = ax1.plot([], [], lw=1)
         line2, = ax2.plot([], [], lw=1)
         line1.set_data(phase_time, unwrap_phase)
@@ -246,7 +246,6 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Magnitude')
         ax1.set_xlim(0, 60)
-        print(np.min(unwrap_phase), np.max(unwrap_phase))
         ax1.set_ylim(int(np.min(unwrap_phase)) - 1, int(np.max(unwrap_phase)) + 1)
 
         # ax2.annotate('Best Cardiac Frequency = %.2f' % (best_cardiac_freq * 60), xy=(0.10, 0.85), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
@@ -257,32 +256,75 @@ def setup_plots(plotnumber, filename=None, filename_truth_Br=None, filename_trut
         ax2.set_ylim(int(np.min(cleaned_chest_displacement)) - 1, int(np.max(cleaned_chest_displacement)) + 1)
 
         plt.tight_layout()
-        return fig, ax1, ax2, line1, line2, best_breathing_freq * 60, best_cardiac_freq * 60
+        return fig1, ax1, ax2, line1, line2, best_breathing_freq * 60, best_cardiac_freq * 60
     elif plotnumber == 2:
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(8, 5))
-        line1, = ax1.plot([], [], lw=2)
-        line2, = ax2.plot([], [], lw=2)
-        line3, = ax3.plot([], [], lw=2)
-        line4, = ax4.plot([], [], lw=2)
+        fig2, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4, figsize=(20, 10))
+        line1, = ax1.plot([], [], lw=1)
+        line2, = ax2.plot([], [], lw=1)
+        line3, = ax3.plot([], [], lw=1)
+        line4, = ax4.plot([], [], lw=1)
+        line5, = ax6.plot([], [], lw=1)
+        line6, = ax7.plot([], [], lw=1)
+        line7, = ax8.plot([], [], lw=1)
 
-        ax1.set_title('Filtered Breathing Rate FFT')
-        ax1.set_xlabel('Frequency (Hz)')
+        line1.set_data(data_FFT_freq, data_fft)
+        line2.set_data(fft_freq_average, np.abs(fft_filtered_data))
+        line3.set_data(phase_time, phase_values)
+        line4.set_data(phase_time, unwrap_phase)
+        line5.set_data(phase_time[:-1], cleaned_chest_displacement)
+        line6.set_data(fft_phase_freq * 60, np.abs(fft_chest_displacement))
+        line7.set_data(fft_band_data_breathing_freq * 60, np.abs(fft_band_data_breathing))
+
+        ax1.set_title('FFT of ADC Data')
+        ax1.set_xlabel('Frequency')
         ax1.set_ylabel('Magnitude')
+        ax1.set_xlim(0, frameRate / 2)
+        ax1.set_ylim(0, int(np.max(np.abs(data_fft))) + 1)
 
-        ax2.set_title('Filtered Heart Rate FFT')
-        ax2.set_xlabel('Frequency (Hz)')
+        ax2.set_title('FFT of Filtered ADC Data')
+        ax2.set_xlabel('Frequency')
         ax2.set_ylabel('Magnitude')
+        ax2.set_xlim(0, frameRate / 2)
+        ax2.set_ylim(0, int(np.max(np.abs(fft_filtered_data))))
 
-        ax3.set_title('Time domain Breathing Rate')
-        ax3.set_xlabel('Time (s)')
-        ax3.set_ylabel('Magnitude')
+        ax3.set_title('Phase Values')
+        ax3.set_xlabel('Time Domain')
+        ax3.set_ylabel('Phase')
+        ax3.set_xlim(0, 60)
+        ax3.set_ylim(int(np.min(phase_values)) - 1, int(np.max(phase_values)) + 1)
 
-        ax4.set_title('Time domain Heart Rate')
-        ax4.set_xlabel('Time (s)')
-        ax4.set_ylabel('Magnitude')
+        ax4.set_title('Unwrapped Phase Values')
+        ax4.set_xlabel('Time Domain')
+        ax4.set_ylabel('Phase')
+        ax4.set_xlim(0, 60)
+        ax4.set_ylim(int(np.min(unwrap_phase)) - 1, int(np.max(unwrap_phase)) + 1)
+
+        ax5.set_title('Chest Displacement from Phase Differencing')
+        ax5.set_xlabel('Time')
+        ax5.set_ylabel('Chest Displacement (cm)')
+        ax5.set_xlim(0, 60)
+        ax5.set_ylim(int(np.min(chest_displacement)) - 1, int(np.max(chest_displacement)) + 1)
+
+        ax6.set_title('FFT of Chest Displacement')
+        ax6.set_xlabel('Frequency (BPM)')
+        ax6.set_ylabel('Magnitude')
+        ax6.set_xlim(0, 600)
+        ax6.set_ylim(0, int(np.max(np.abs(fft_chest_displacement))))
+
+        ax7.set_title('Breathing Region Filtered Data')
+        ax7.set_xlabel('Frequency (BPM)')
+        ax7.set_ylabel('Magnitude')
+        ax7.set_xlim(0, 600)
+        ax7.set_ylim(0, int(np.max(np.abs(fft_band_data_breathing))))
+
+        ax8.set_title('Cardiac Region Filtered Data')
+        ax8.set_xlabel('Frequency (BPM)')
+        ax8.set_ylabel('Magnitude')
+        ax8.set_xlim(0, 600)
+        ax8.set_ylim(0, int(np.max(np.abs(fft_band_data_cardiac))))
 
         plt.tight_layout()
-        return fig, ax1, ax2, line1, line2, ax3, ax4, line3, line4, best_breathing_freq * 60, best_cardiac_freq * 60
+        return fig2, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, line1, line2, line3, line4, line5, line6, line7, best_breathing_freq * 60, best_cardiac_freq * 60
 
 # # make a big subplot for all the plots
 # fig, axs = plt.subplots(4, 3, figsize=(20, 12))
