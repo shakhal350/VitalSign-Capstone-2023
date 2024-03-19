@@ -10,40 +10,41 @@ import csv
 from GradientFrame import GradientFrame
 
 class LoadingScreenGif:
-    def __init__(self, r):
+    def __init__(self, r, first):
+        self.startup = first
         self.root = r
-        self.canvas = GradientFrame(r, from_color="#e9b7ce", to_color="#d3f3f1", width=17000, height=700, borderwidth=0)
+        self.canvas = GradientFrame(r, from_color="#FFFFFF", to_color="#9BA5EE", width=17000, height=700, borderwidth=0)
 
-        self.img0 = Image.open("loadingGif/frame_00_delay-0.03s.gif").resize((72, 72))
-        self.img1 = Image.open("loadingGif/frame_01_delay-0.03s.gif").resize((72, 72))
-        self.img2 = Image.open("loadingGif/frame_02_delay-0.03s.gif").resize((72, 72))
-        self.img3 = Image.open("loadingGif/frame_03_delay-0.03s.gif").resize((72, 72))
-        self.img4 = Image.open("loadingGif/frame_04_delay-0.03s.gif").resize((72, 72))
-        self.img5 = Image.open("loadingGif/frame_05_delay-0.03s.gif").resize((72, 72))
-        self.img6 = Image.open("loadingGif/frame_06_delay-0.03s.gif").resize((72, 72))
-        self.img7 = Image.open("loadingGif/frame_07_delay-0.03s.gif").resize((72, 72))
-        self.img8 = Image.open("loadingGif/frame_08_delay-0.03s.gif").resize((72, 72))
-        self.img9 = Image.open("loadingGif/frame_09_delay-0.03s.gif").resize((72, 72))
-        self.img10 = Image.open("loadingGif/frame_10_delay-0.03s.gif").resize((72, 72))
-        self.img11 = Image.open("loadingGif/frame_11_delay-0.03s.gif").resize((72, 72))
-        self.img12 = Image.open("loadingGif/frame_12_delay-0.03s.gif").resize((72, 72))
-        self.img13 = Image.open("loadingGif/frame_13_delay-0.03s.gif").resize((72, 72))
-        self.img14 = Image.open("loadingGif/frame_14_delay-0.03s.gif").resize((72, 72))
-        self.img15 = Image.open("loadingGif/frame_15_delay-0.03s.gif").resize((72, 72))
-        self.img16 = Image.open("loadingGif/frame_16_delay-0.03s.gif").resize((72, 72))
-        self.img17 = Image.open("loadingGif/frame_17_delay-0.03s.gif").resize((72, 72))
-        self.img18 = Image.open("loadingGif/frame_18_delay-0.03s.gif").resize((72, 72))
-        self.img19 = Image.open("loadingGif/frame_19_delay-0.03s.gif").resize((72, 72))
-        self.img20 = Image.open("loadingGif/frame_20_delay-0.03s.gif").resize((72, 72))
-        self.img21 = Image.open("loadingGif/frame_21_delay-0.03s.gif").resize((72, 72))
-        self.img22 = Image.open("loadingGif/frame_22_delay-0.03s.gif").resize((72, 72))
-        self.img23 = Image.open("loadingGif/frame_23_delay-0.03s.gif").resize((72, 72))
-        self.img24 = Image.open("loadingGif/frame_24_delay-0.03s.gif").resize((72, 72))
-        self.img25 = Image.open("loadingGif/frame_25_delay-0.03s.gif").resize((72, 72))
-        self.img26 = Image.open("loadingGif/frame_26_delay-0.03s.gif").resize((72, 72))
-        self.img27 = Image.open("loadingGif/frame_27_delay-0.03s.gif").resize((72, 72))
-        self.img28 = Image.open("loadingGif/frame_28_delay-0.03s.gif").resize((72, 72))
-        self.img29 = Image.open("loadingGif/frame_29_delay-0.03s.gif").resize((72, 72))
+        self.img0 = Image.open("loadingGif/frame_00_delay-0.03s.gif").resize((50, 50))
+        self.img1 = Image.open("loadingGif/frame_01_delay-0.03s.gif").resize((50, 50))
+        self.img2 = Image.open("loadingGif/frame_02_delay-0.03s.gif").resize((50, 50))
+        self.img3 = Image.open("loadingGif/frame_03_delay-0.03s.gif").resize((50, 50))
+        self.img4 = Image.open("loadingGif/frame_04_delay-0.03s.gif").resize((50, 50))
+        self.img5 = Image.open("loadingGif/frame_05_delay-0.03s.gif").resize((50, 50))
+        self.img6 = Image.open("loadingGif/frame_06_delay-0.03s.gif").resize((50, 50))
+        self.img7 = Image.open("loadingGif/frame_07_delay-0.03s.gif").resize((50, 50))
+        self.img8 = Image.open("loadingGif/frame_08_delay-0.03s.gif").resize((50, 50))
+        self.img9 = Image.open("loadingGif/frame_09_delay-0.03s.gif").resize((50, 50))
+        self.img10 = Image.open("loadingGif/frame_10_delay-0.03s.gif").resize((50, 50))
+        self.img11 = Image.open("loadingGif/frame_11_delay-0.03s.gif").resize((50, 50))
+        self.img12 = Image.open("loadingGif/frame_12_delay-0.03s.gif").resize((50, 50))
+        self.img13 = Image.open("loadingGif/frame_13_delay-0.03s.gif").resize((50, 50))
+        self.img14 = Image.open("loadingGif/frame_14_delay-0.03s.gif").resize((50, 50))
+        self.img15 = Image.open("loadingGif/frame_15_delay-0.03s.gif").resize((50, 50))
+        self.img16 = Image.open("loadingGif/frame_16_delay-0.03s.gif").resize((50, 50))
+        self.img17 = Image.open("loadingGif/frame_17_delay-0.03s.gif").resize((50, 50))
+        self.img18 = Image.open("loadingGif/frame_18_delay-0.03s.gif").resize((50, 50))
+        self.img19 = Image.open("loadingGif/frame_19_delay-0.03s.gif").resize((50, 50))
+        self.img20 = Image.open("loadingGif/frame_20_delay-0.03s.gif").resize((50, 50))
+        self.img21 = Image.open("loadingGif/frame_21_delay-0.03s.gif").resize((50, 50))
+        self.img22 = Image.open("loadingGif/frame_22_delay-0.03s.gif").resize((50, 50))
+        self.img23 = Image.open("loadingGif/frame_23_delay-0.03s.gif").resize((50, 50))
+        self.img24 = Image.open("loadingGif/frame_24_delay-0.03s.gif").resize((50, 50))
+        self.img25 = Image.open("loadingGif/frame_25_delay-0.03s.gif").resize((50, 50))
+        self.img26 = Image.open("loadingGif/frame_26_delay-0.03s.gif").resize((50, 50))
+        self.img27 = Image.open("loadingGif/frame_27_delay-0.03s.gif").resize((50, 50))
+        self.img28 = Image.open("loadingGif/frame_28_delay-0.03s.gif").resize((50, 50))
+        self.img29 = Image.open("loadingGif/frame_29_delay-0.03s.gif").resize((50, 50))
 
         self.gif0 = ImageTk.PhotoImage(self.img1)
         self.gif1 = ImageTk.PhotoImage(self.img2)
@@ -81,12 +82,20 @@ class LoadingScreenGif:
                      self.gif17, self.gif18, self.gif19,self.gif20, self.gif21, self.gif22, self.gif23, self.gif24,
                      self.gif25, self.gif26, self.gif27, self.gif28, self.gif29]
 
-        self.text2 = self.canvas.create_text(810, 200, text="Vital Sign Monitor", font=("SF Pro Display", 56))
-        self.text1 = self.canvas.create_text(810, 370, text="Welcome", font=("SF Pro Display", 24))
-        self.final = self.canvas.create_image(810, 530, image=self.gif0)
+        self.logoImage = Image.open("icons8-proximity-sensor-80.png").resize((110,110))
+        self.logoPic = ImageTk.PhotoImage(self.logoImage)
+
+
+        self.text2 = self.canvas.create_text(610, 150, text="BIONEST", font=("Mokoto", 96), fill="#003771")
+        self.logo = self.canvas.create_image(610, 300, image=self.logoPic)
+        if self.startup:
+            self.final = self.canvas.create_image(610, 530, image=self.gif0)
 
     def pack(self):
         self.canvas.pack()
+
+    def secondTime(self):
+        self.startup = False
 
     def update(self, root, i):
         frame = self.gifs[i]
@@ -97,15 +106,28 @@ class LoadingScreenGif:
         self.canvas.itemconfig(self.final, image=frame)
         root.after(20, self.update, root, i)
 
+    def select(self, root):
+        self.canvas.delete(self.final)
+        self.Vital = ttk.Button(root, text="Access Vital Signs")
+        self.Settings = ttk.Button(root, text="Settings")
+
+        #self.Vital.config(width=10, activebackground="#FFF8ED")
+        #self.Settings.config(width=10, activebackground="#FFF8ED")
+
+        self.VitalButton = self.canvas.create_window(610, 530,window=self.Vital)
+        self.SettingsButton = self.canvas.create_window(610, 570, window=self.Settings)
+
+
+
 #FOR TESTING
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("1220x740")
+    root.geometry("1220x640")
     root.title("Vital Signs Monitor")
     frame = tk.Frame(root)
     frame.pack()
-    giffy = LoadingScreenGif(frame)
+    giffy = LoadingScreenGif(frame, True)
     giffy.pack()
     root.after(0, giffy.update, root, 0)
     root.mainloop()
