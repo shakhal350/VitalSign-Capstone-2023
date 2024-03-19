@@ -10,6 +10,7 @@ import pandas as pd
 import csv
 import LoadingScreenGif as LSG
 from GradientFrame import GradientFrame
+from  process_raw_data import readDCA1000
 
 class VitalSignsGUI:
     def __init__(self, root):
@@ -42,7 +43,7 @@ class VitalSignsGUI:
         if self.startup:
             self.splashFrame.after(1000)
             self.loadingGif.canvas.delete(self.loadingGif.final)
-        self.Record = tk.Button(root, text="Record Vitals", background="#FFF8ED")
+        self.Record = tk.Button(root, text="Record Vitals", command=self.record_button, background="#FFF8ED")
         self.Vital = tk.Button(root, text="Access Vital Signs", command=self.home_screen, background="#FFF8ED")
         self.Settings = tk.Button(root, text="Settings", command=self.settingsPage, background="#FFF8ED")
         self.Quit = tk.Button(root, text="Quit", command=self.root.destroy, background="#FFF8ED")
@@ -58,6 +59,12 @@ class VitalSignsGUI:
         self.QuitButton = self.loadingGif.canvas.create_window(610, 570, window=self.Quit)
 
         self.loadingGif.secondTime()
+
+    def record_button(self):
+        # Example call, replace paths with your desired file paths or use dialog to select files
+        fileName = r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin"
+        csvFileName = r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv"
+        readDCA1000(fileName, csvFileName)
 
 
     def home_screen(self):
