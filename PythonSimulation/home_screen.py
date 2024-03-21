@@ -11,6 +11,7 @@ import csv
 import LoadingScreenGif as LSG
 from GradientFrame import GradientFrame
 from  process_raw_data import readDCA1000
+import time
 
 class VitalSignsGUI:
     def __init__(self, root):
@@ -24,6 +25,34 @@ class VitalSignsGUI:
         self.splashFrame = ttk.Frame(self.root)
         self.startup = True
         self.loadingGif = LSG.LoadingScreenGif(self.splashFrame, self.startup)
+        self.alreadyRecorded = False
+        self.setup_progress_bar()
+    
+    def setup_progress_bar(self):
+        """Create and pack the progress bar in the GUI."""
+        self.progress_bar = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="determinate")
+        self.progress_bar.pack(pady=20)  # Pack the progress bar when starting the progress
+
+
+    def start_progress(self):
+        """Start the progress."""
+        self.progress_bar.pack(pady=20)  # Pack the progress bar when starting the progress
+        self.progress_bar['value'] = 0
+        self.root.update_idletasks()
+        self.progress()  # Start progressing
+
+    def progress(self):
+        """Simulate progress."""
+        if self.progress_bar['value'] < 100:
+            self.progress_bar['value'] += 10  # Increase progress
+            self.root.after(100, self.progress)  # Continue incrementing progress
+        else:
+            self.complete_progress()
+
+    def complete_progress(self):
+        """Complete the progress and hide the progress bar."""
+        self.progress_bar['value'] = 100
+        self.root.after(500, lambda: self.progress_bar.pack_forget())  # Hide after completion
 
     def splashScreen(self):
         self.root.geometry("1220x640")
@@ -61,11 +90,15 @@ class VitalSignsGUI:
         self.loadingGif.secondTime()
 
     def record_button(self):
-        # Example call, replace paths with your desired file paths or use dialog to select files
         fileName = r"C:\ti\mmwave_studio_02_01_01_00\mmWaveStudio\PostProc\adc_data.bin"
         csvFileName = r"C:\Users\Shaya\PycharmProjects\VitalSign-Capstone-2023\DATASET\DCA1000EVM_Shayan_normal_upclose_60sec.csv"
-        readDCA1000(fileName, csvFileName)
 
+        if self.alreadyRecorded:
+            tk.messagebox.showinfo("Information", "Data is already processed.")
+            return
+        self.start_progress()
+        self.alreadyRecorded = True
+        readDCA1000(fileName, csvFileName)
 
     def home_screen(self):
 
