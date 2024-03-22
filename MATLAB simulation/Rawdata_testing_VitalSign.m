@@ -22,8 +22,9 @@ fps = 20; % Frames per Second
 datalength = fps * 60 * 5; % # of Frames during Data Collection, assuming 5 minutes of data
 
 %% Load the data
-filename = 'Rawdata_11.csv'; % Replace with your file path
+filename = 'C:\Users\omarm\Downloads/Transposed_Rawdata_1.csv'; % Replace with your file path
 data = readmatrix(filename);
+data = transpose(data);
 
 % Assuming that the data is loaded correctly and the first 100,000 columns correspond to 100,000 samples
 data_rx1 = data(1, 1:100000);
