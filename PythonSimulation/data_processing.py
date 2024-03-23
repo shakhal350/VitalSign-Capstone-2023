@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
+
+from BeamFormer import mvdr_beamforming
 
 
 def load_and_process_data(filename):
@@ -8,29 +11,28 @@ def load_and_process_data(filename):
         data = pd.read_csv(filename, header=None)
         for col in data.columns:
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
-        data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
-        data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
-
-        return data_avg_real, data_avg_imag, get_radar_parameters("Children Dataset")
+        data = np.array(data)
+        data = mvdr_beamforming(data, np.array([1, 2, 2, 1]))
+        # data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
+        # data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
+        data_real = np.real(data)
+        data_imag = np.imag(data)
+        # return data_avg_real, data_avg_imag, get_radar_parameters("Children Dataset")
+        return data_real, data_imag, get_radar_parameters("Children Dataset")
 
     # For VitalSign Dataset from Github
     if 'DCA1000EVM' in filename:
         data = pd.read_csv(filename, header=None, skiprows=1)
         for col in data.columns:
             data[col] = data[col].apply(lambda x: complex(x))
-        data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
-        data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
+        data = np.array(data)
 
-        return data_avg_real, data_avg_imag, get_radar_parameters("DCA1000EVM")
-
-    if 'Walking' in filename:
-        data = pd.read_csv(filename, header=None)
-        for col in data.columns:
-            data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
-        data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
-        data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
-
-        return data_avg_real, data_avg_imag, get_radar_parameters("Walking Dataset")
+        data = mvdr_beamforming(data, np.array([1, 2, 2, 1]))
+        # data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
+        # data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
+        data_real = np.real(data)
+        data_imag = np.imag(data)
+        return data_real, data_imag, get_radar_parameters("DCA1000EVM")
 
 
 def get_radar_parameters(dataset_name):
@@ -72,25 +74,6 @@ def get_radar_parameters(dataset_name):
             "samplesPerSecond": 2 * 256 * 20,  # Number of samples per second
             "rangeBinInterval": 0.343,  # Range interval in meters
             "NumOfRangeBins": int(((3e6 * c) / (2 * 10.235e12)) / (c / (2 * 0.436907e9)))  # Range bins
-        }
-    elif dataset_name == "Walking Dataset":
-        r_para = {
-            "rxNum": 4,
-            "freqSlope": 60.012e12,
-            "sampleRate": 10e6,
-            "bandwidth": 3.6e9,
-            "chirpLoops": 128,
-            "adcSamples": 512,
-            "startFreq": 77e9,
-            "lambda": c / (3.6e9 / 2 + 77e9),
-            "rangeResol": c / (2 * 3.6e9),
-            "rampTime": 60e-6,
-            "rangeMax": ((60e-6 * c) / (4 * 3.6e9)) * 10e6,
-            "chirpTime": 160e-6,
-            "frameRate": 25,
-            "samplesPerFrame": 128 * 512,
-            "samplesPerSecond": 128 * 512 * 25,
-            "NumOfRangeBins": int(((60e-6 * c) / (4 * 3.6e9)) * 10e6 / c / (2 * 3.6e9))
         }
 
     return r_para

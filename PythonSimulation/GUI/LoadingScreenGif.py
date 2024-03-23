@@ -82,7 +82,7 @@ class LoadingScreenGif:
                      self.gif17, self.gif18, self.gif19,self.gif20, self.gif21, self.gif22, self.gif23, self.gif24,
                      self.gif25, self.gif26, self.gif27, self.gif28, self.gif29]
 
-        self.logoImage = Image.open("icons8-proximity-sensor-80.png").resize((110,110))
+        self.logoImage = Image.open("icons8-proximity-sensor-80.png").resize((110, 110))
         self.logoPic = ImageTk.PhotoImage(self.logoImage)
 
 

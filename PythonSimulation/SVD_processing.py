@@ -7,11 +7,10 @@ def SVD_Matrix(data_matrix, radar_parameters, num_components):
 
     Parameters:
     data_matrix (numpy.ndarray): A matrix representation of the radar data.
-
-    Returns:
     U (numpy.ndarray): The left singular vectors.
     s (numpy.ndarray): The singular values.
     Vh (numpy.ndarray): The right singular vectors (conjugate transposed).
+    num_components (int): The number of singular values/vectors to keep.
     """
     # Ensure radar_values is an array with the correct number of elements
     radar_values = np.array(data_matrix, dtype=float)  # data_matrix should be an array-like structure with radar values
