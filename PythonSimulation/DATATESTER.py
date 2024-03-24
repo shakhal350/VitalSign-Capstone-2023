@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
 from IPython.display import display, clear_output
 
+from doppler import doppler_fft_spectrogram
 from filter_processing import apply_high_pass_filter, butter_bandpass_filter, lowpass_filter
 from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
@@ -65,23 +66,23 @@ def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.1):
 # window_time = 60  # <-----*** CHOOSE a window time YOU WANT ***
 # start_time = np.random.randint(60, 61)  # <-----*** Randomly picks a start time *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT
 start_time = 0
-SVD_order = 50  # <-----*** CHOOSE a SVD order YOU WANT ***
+SVD_order = 10000  # <-----*** CHOOSE a SVD order YOU WANT ***
 
 sampleNumber = np.random.randint(1, 50)  # <-----*** Randomly picks a sample number *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT TO TEST A SPECIFIC FILE
-sampleNumber = 3
+sampleNumber = 49
 filename_truth_Br = None
 filename_truth_HR = None
-# filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
-# filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
-# filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
-filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
-
+filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
+filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
+filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
+# filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
 
 data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 frameRate = radar_parameters['frameRate']
 samplesPerFrame = radar_parameters['samplesPerFrame']
 
 window_time = len(data_Re) / (frameRate * samplesPerFrame)
+window_time = 60
 
 # initial fft of the data to compare with before and after filtering
 data_abs = np.abs(data_Re + 1j * data_Im)
@@ -103,7 +104,11 @@ data_Im_window = data_Im[start:end]
 # SVD for noise reduction
 data_Re_SVD = SVD_Matrix(data_Re_window, radar_parameters, SVD_order)
 data_Im_SVD = SVD_Matrix(data_Im_window, radar_parameters, SVD_order)
+data_Re_SVD = butter_bandpass_filter(data_Re_SVD, 0.2, 2, frameRate, order=5)
+data_Im_SVD = butter_bandpass_filter(data_Im_SVD, 0.2, 2, frameRate, order=5)
 filtered_data = data_Re_SVD + 1j * data_Im_SVD
+
+doppler_fft_spectrogram(filtered_data, frameRate, samplesPerFrame)
 
 time_domain = np.linspace(start_time, start_time + window_time, filtered_data.shape[0])
 ######################################## FFT of the filtered data ########################################
