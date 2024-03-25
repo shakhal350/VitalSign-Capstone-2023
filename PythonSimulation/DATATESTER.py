@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
 from IPython.display import display, clear_output
 
-from doppler import doppler_fft_spectrogram
 from filter_processing import apply_high_pass_filter, butter_bandpass_filter, lowpass_filter
 from SVD_processing import SVD_Matrix
 from data_processing import load_and_process_data
@@ -35,7 +34,7 @@ def compute_fft(time_signal, fRate):
     return fft_signal, fft_freq
 
 
-def find_significant_peaks(fft_data, fft_freq, prominence=0.1, width=3, percentile=99):
+def find_significant_peaks(fft_data, fft_freq, prominence=0.1, width=4, percentile=98):
     # power spectral density (PSD)
     fft_data = np.abs(fft_data) ** 2
     thresh = np.percentile(fft_data, percentile)
@@ -54,7 +53,7 @@ def select_best_peak(p, prop, fft_freq):
     return best_peak_freq
 
 
-def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.1):
+def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.15):
     starting = max(best_peak_freq - window_gap, 0)
     ending = best_peak_freq + window_gap
     starting_index = np.where(fft_freq > starting)[0][0]  # Find the index of the frequency closest to the starting value
@@ -66,23 +65,25 @@ def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.1):
 # window_time = 60  # <-----*** CHOOSE a window time YOU WANT ***
 # start_time = np.random.randint(60, 61)  # <-----*** Randomly picks a start time *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT
 start_time = 0
-SVD_order = 10000  # <-----*** CHOOSE a SVD order YOU WANT ***
+SVD_order = 5  # <-----*** CHOOSE a SVD order YOU WANT ***
 
 sampleNumber = np.random.randint(1, 50)  # <-----*** Randomly picks a sample number *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT TO TEST A SPECIFIC FILE
-sampleNumber = 49
+sampleNumber = 3
 filename_truth_Br = None
 filename_truth_HR = None
-filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
-filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
-filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
+# filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
+# filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
+# filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
 # filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
+filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\CSVFiles(RawData)\DCA1000EVM_joe_12br_79hr_didntbreath_at_the_end.csv"
+
 
 data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 frameRate = radar_parameters['frameRate']
 samplesPerFrame = radar_parameters['samplesPerFrame']
 
 window_time = len(data_Re) / (frameRate * samplesPerFrame)
-window_time = 60
+window_time = 20
 
 # initial fft of the data to compare with before and after filtering
 data_abs = np.abs(data_Re + 1j * data_Im)
@@ -104,11 +105,7 @@ data_Im_window = data_Im[start:end]
 # SVD for noise reduction
 data_Re_SVD = SVD_Matrix(data_Re_window, radar_parameters, SVD_order)
 data_Im_SVD = SVD_Matrix(data_Im_window, radar_parameters, SVD_order)
-data_Re_SVD = butter_bandpass_filter(data_Re_SVD, 0.2, 2, frameRate, order=5)
-data_Im_SVD = butter_bandpass_filter(data_Im_SVD, 0.2, 2, frameRate, order=5)
 filtered_data = data_Re_SVD + 1j * data_Im_SVD
-
-doppler_fft_spectrogram(filtered_data, frameRate, samplesPerFrame)
 
 time_domain = np.linspace(start_time, start_time + window_time, filtered_data.shape[0])
 ######################################## FFT of the filtered data ########################################
@@ -124,6 +121,14 @@ print(f"FFT RANGE: Best Peak Frequency: {best_fft_peak_freq} Hz")
 
 # Determine window start and end frequencies around the best peak
 window_start_peak, window_end_peak, window_start_index, window_end_index = determine_frequency_window(best_fft_peak_freq, fft_freq_average)
+# round to the nearest decimal
+window_start_peak = round(window_start_peak, 2)
+window_end_peak = round(window_end_peak, 2)
+print(f"Window Start Frequency: {window_start_peak} Hz, Window End Frequency: {window_end_peak} Hz")
+data_Re_filtered = data_Re_window
+data_Im_filtered = data_Im_window
+data_Re_filtered = butter_bandpass_filter(data_Re_filtered, window_start_peak, window_end_peak, frameRate, order=4)
+data_Im_filtered = butter_bandpass_filter(data_Im_filtered, window_start_peak, window_end_peak, frameRate, order=4)
 
 ######################################## Phase and Unwrapped Phase Processing ########################################
 phase_values = []
@@ -131,8 +136,8 @@ spectrogram_data = []
 fig_ani, ax = plt.subplots()
 for i in range(0, len(filtered_data), samplesPerFrame):
     # Extract a single frame
-    current_frame_Re = data_Re_SVD[i:i + samplesPerFrame]
-    current_frame_Im = data_Im_SVD[i:i + samplesPerFrame]
+    current_frame_Re = data_Re_filtered[i:i + samplesPerFrame]
+    current_frame_Im = data_Im_filtered[i:i + samplesPerFrame]
     current_frame = current_frame_Re + 1j * current_frame_Im
 
     fft_frame, fft_freq_frame = compute_fft(current_frame, frameRate)

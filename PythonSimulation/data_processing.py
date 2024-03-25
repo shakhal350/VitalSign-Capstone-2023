@@ -13,11 +13,8 @@ def load_and_process_data(filename):
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
         data = np.array(data)
         data = mvdr_beamforming(data, np.array([1, 2, 2, 1]))
-        # data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
-        # data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
         data_real = np.real(data)
         data_imag = np.imag(data)
-        # return data_avg_real, data_avg_imag, get_radar_parameters("Children Dataset")
         return data_real, data_imag, get_radar_parameters("Children Dataset")
 
     # For VitalSign Dataset from Github
@@ -26,10 +23,7 @@ def load_and_process_data(filename):
         for col in data.columns:
             data[col] = data[col].apply(lambda x: complex(x))
         data = np.array(data)
-
         data = mvdr_beamforming(data, np.array([1, 2, 2, 1]))
-        # data_avg_real = (np.real(data[0]) + np.real(data[1]) + np.real(data[2]) + np.real(data[3])) / 4
-        # data_avg_imag = (np.imag(data[0]) + np.imag(data[1]) + np.imag(data[2]) + np.imag(data[3])) / 4
         data_real = np.real(data)
         data_imag = np.imag(data)
         return data_real, data_imag, get_radar_parameters("DCA1000EVM")
