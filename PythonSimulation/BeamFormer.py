@@ -14,7 +14,7 @@ def mvdr_beamforming(IQ_data, steering_vector):
     # Ensure IQ_data is transposed if necessary
     if IQ_data.shape[0] > IQ_data.shape[1]:
         IQ_data = IQ_data.T
-    print(f"IQ_data.shape (after potential transpose): ", IQ_data.shape)
+        print(f"IQ_data.shape (after transpose): ", IQ_data.shape)
 
     # Downsample the data
     downsample_copy = downsample_data(IQ_data, 1000)  # Transpose back after downsampling
