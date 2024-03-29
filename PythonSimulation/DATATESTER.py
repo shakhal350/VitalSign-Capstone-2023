@@ -62,11 +62,38 @@ def compute_fft(time_signal, fRate):
 
 
 def find_significant_peaks(fft_data, prominence=0.1, width=3, percentile=95):
-    # power spectral density (PSD)
-    fft_data = np.abs(fft_data) ** 2
-    thresh = np.percentile(fft_data, percentile)
-    p, prop = find_peaks(fft_data, prominence=prominence, width=width, height=thresh)
-    return p, prop
+    # Check if fft_data is complex and compute PSD
+    psd_data = np.abs(fft_data)**2 if np.iscomplexobj(fft_data) else fft_data**2
+    
+    # Find the threshold based on the percentile of the PSD data
+    thresh = np.percentile(psd_data, percentile)
+    
+    # Find peaks using the calculated threshold and specified parameters
+    peaks, properties = find_peaks(psd_data, prominence=prominence, width=width, height=thresh)
+    
+    return peaks, properties
+
+
+def  estimate_peak_intervals(peaks, fft_freqs, fs):
+    # Ensure there are at least two peaks to calculate intervals
+    if len(peaks) > 1:
+        # Calculate the frequency differences between each consecutive peak
+        peak_freq_diffs = np.diff(fft_freqs[peaks])
+        
+        # Convert the frequency intervals to periods (1/frequency)
+        peak_periods = 1 / peak_freq_diffs
+        
+        # Estimate the rate as the median of the calculated periods
+        peak_rate = np.median(peak_periods)
+        
+        # Convert rate to Hz if needed
+        peak_rate_hz = peak_rate * fs
+        
+        return peak_periods, peak_rate_hz
+    else:
+        return np.array([]), 0
+
+
 
 
 def select_best_peak(p, prop, fft_freq):
@@ -91,12 +118,12 @@ def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.15):
 start_time = 0
 
 sampleNumber = np.random.randint(1, 50)  # <-----*** Randomly picks a sample number *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT TO TEST A SPECIFIC FILE
-sampleNumber = 41
+sampleNumber = 11
 filename_truth_Br = None
 filename_truth_HR = None
-filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
-filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
-filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
+filename = r'C:\Users\Liam\Desktop\dev\COEN490\VitalSign-Capstone-2023\datasets\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
+#filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
+#filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
 # filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
 # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET\Joseph\1m_Data_face\DCA1000EVM_Joseph_16br_70_hr.csv"
 
@@ -127,7 +154,8 @@ if spectrum_detect is not False:
     print(f"***Person detected at frequency: {spectrum_detect}")
 else:
     print("***No person detected***")
-# Find peaks and their properties
+
+# Find peaks and their properties   
 peaks_average, properties = find_significant_peaks(fft_filtered_data, width=1, percentile=99)
 
 # Select the peak with the highest significance score
@@ -253,8 +281,32 @@ best_cardiac_freq_peaks, cardiac_freq_peaks_properties = find_significant_peaks(
 best_breathing_freq = select_best_peak(best_breathing_freq_peaks, breathing_freq_peaks_properties, fft_band_data_breathing_freq)
 best_cardiac_freq = select_best_peak(best_cardiac_freq_peaks, cardiac_freq_peaks_properties, fft_band_data_cardiac_freq)
 
-print(f"Best Breathing Frequency: {best_breathing_freq * 60} BPM")
-print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
+# After finding significant peaks for the breathing band
+breathing_peak_intervals, breathing_peak_rate_hz = estimate_peak_intervals(
+    best_breathing_freq_peaks, 
+    fft_band_data_breathing_freq, 
+    frameRate
+)
+
+# After finding significant peaks for the cardiac band
+cardiac_peak_intervals, cardiac_peak_rate_hz = estimate_peak_intervals(
+    best_cardiac_freq_peaks, 
+    fft_band_data_cardiac_freq, 
+    frameRate
+)
+
+# Convert rates from Hz to BPM and print them
+breathing_peak_rate_bpm = breathing_peak_rate_hz * 60
+cardiac_peak_rate_bpm = cardiac_peak_rate_hz * 60
+
+print(f"\nBreathing Peak Intervals: {breathing_peak_intervals}")
+print(f"Breathing Median Peak Rate: {breathing_peak_rate_bpm} BPM")
+
+print(f"\nCardiac Peak Intervals: {cardiac_peak_intervals}")
+print(f"Cardiac Median Peak Rate: {cardiac_peak_rate_bpm} BPM")
+
+# print(f"Best Breathing Frequency: {best_breathing_freq * 60} BPM")
+# print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 
 # make a big subplot for all the plots
 fig, axs = plt.subplots(2, 4, figsize=(30, 8))
