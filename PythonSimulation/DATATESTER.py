@@ -81,7 +81,7 @@ def select_best_peak(p, prop, fft_freq):
     return best_peak_freq
 
 
-def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.2):
+def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.3):
     starting = max(best_peak_freq - window_gap, 0.1)
     ending = best_peak_freq + window_gap
     starting_index = np.where(fft_freq > starting)[0][0]  # Find the index of the frequency closest to the starting value
@@ -102,7 +102,7 @@ filename_truth_HR = None
 
 # folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
 # filename = pick_random_file_from_subfolders(folder_path)
-filename = r"C:\Users\Joseph\Downloads\1443_DATASET\EV\Grace\DCA1000EVM_normalbreathingat1m_11br_77hr.csv"
+filename = r"c:\Users\Joseph\Downloads\1443_DATASET\EV\Joseph\DCA1000EVM_normalbreathingat1m_12br_82hr.csv"
 if filename:
     print(f"Randomly selected file: {filename}")
 else:
@@ -159,8 +159,8 @@ print(f"Window Start Frequency: {window_start_peak} Hz, Window End Frequency: {w
 data_Re_window = bandpass_filter(filtered_data, window_start_peak, window_end_peak, frameRate, order=4)
 data_Im_window = bandpass_filter(filtered_data, window_start_peak, window_end_peak, frameRate, order=4)
 
-data_Re_window = SVD_Matrix(np.real(data_Re_window), radar_parameters, 8)
-data_Im_window = SVD_Matrix(np.imag(data_Im_window), radar_parameters, 8)
+data_Re_window = SVD_Matrix(np.real(data_Re_window), radar_parameters, 10)
+data_Im_window = SVD_Matrix(np.imag(data_Im_window), radar_parameters, 10)
 
 ######################################## Phase and Unwrapped Phase Processing ########################################
 phase_values = []
@@ -190,7 +190,7 @@ for i in range(0, len(filtered_data), samplesPerFrame):
         ax.set_xlabel('Frequency')
         ax.set_ylabel('Magnitude')
         ax.legend()
-        plt.pause(0.00001)  # Pause briefly to allow the figure to be updated
+        plt.pause(0.01)  # Pause briefly to allow the figure to be updated
 
     # Find the closest fft_freq_frame to the best_range_fft_peak_freq
     best_range_fft_peak_freq_index = np.where(fft_freq_frame > best_range_fft_peak_freq)[0][0]
