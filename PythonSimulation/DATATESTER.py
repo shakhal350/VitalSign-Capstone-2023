@@ -75,22 +75,23 @@ def find_significant_peaks(fft_data, prominence=0.1, width=3, percentile=95):
     return peaks, properties
 
 
-def estimate_peak_intervals(peaks, fft_freqs, fs):
+def estimate_peak_intervals(peaks, fft_freqs):
     # Ensure there are at least two peaks to calculate intervals
     if len(peaks) > 1:
         # Calculate the frequency differences between each consecutive peak
         peak_freq_diffs = np.diff(fft_freqs[peaks])
         
-        # Convert the frequency intervals to periods (1/frequency)
-        peak_periods = 1 / peak_freq_diffs
+        # Avoid division by zero or very small frequency differences
+        peak_freq_diffs = peak_freq_diffs[peak_freq_diffs > 0]
         
-        # Estimate the rate as the median of the calculated periods
-        peak_rate = np.median(peak_periods)
+        # Convert the frequency intervals to time intervals (seconds)
+        peak_time_intervals = 1 / peak_freq_diffs
         
-        # Convert rate to Hz if needed
-        peak_rate_hz = peak_rate * fs
+        # Compute the median time interval and convert to rate (Hz)
+        median_interval = np.median(peak_time_intervals)
+        peak_rate_hz = 1 / median_interval if median_interval > 0 else 0
         
-        return peak_periods, peak_rate_hz
+        return peak_time_intervals, peak_rate_hz
     else:
         return np.array([]), 0
 
