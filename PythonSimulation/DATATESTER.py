@@ -62,12 +62,39 @@ def compute_fft(time_signal, fRate):
     return fft_signal, fft_freq
 
 
-def find_significant_peaks(fft_data, prominence=0.1, width=1, percentile=95):
-    # power spectral density (PSD)
-    fft_data = np.abs(fft_data)
-    thresh = np.percentile(fft_data, percentile)
-    p, prop = find_peaks(fft_data, prominence=prominence, width=width, height=thresh)
-    return p, prop
+def find_significant_peaks(fft_data, prominence=0.1, width=3, percentile=95):
+    # Check if fft_data is complex and compute PSD
+    psd_data = np.abs(fft_data)**2 if np.iscomplexobj(fft_data) else fft_data**2
+    
+    # Find the threshold based on the percentile of the PSD data
+    thresh = np.percentile(psd_data, percentile)
+    
+    # Find peaks using the calculated threshold and specified parameters
+    peaks, properties = find_peaks(psd_data, prominence=prominence, width=width, height=thresh)
+    
+    return peaks, properties
+
+
+def estimate_peak_intervals(peaks, fft_freqs, fs):
+    # Ensure there are at least two peaks to calculate intervals
+    if len(peaks) > 1:
+        # Calculate the frequency differences between each consecutive peak
+        peak_freq_diffs = np.diff(fft_freqs[peaks])
+        
+        # Convert the frequency intervals to periods (1/frequency)
+        peak_periods = 1 / peak_freq_diffs
+        
+        # Estimate the rate as the median of the calculated periods
+        peak_rate = np.median(peak_periods)
+        
+        # Convert rate to Hz if needed
+        peak_rate_hz = peak_rate * fs
+        
+        return peak_periods, peak_rate_hz
+    else:
+        return np.array([]), 0
+
+
 
 
 def select_best_peak(p, prop, fft_freq):
@@ -262,12 +289,37 @@ fft_band_data_cardiac, fft_band_data_cardiac_freq = compute_fft(bandpass_chest_d
 best_breathing_freq_peaks, breathing_freq_peaks_properties = find_significant_peaks(fft_band_data_breathing, width=1, percentile=99)
 best_cardiac_freq_peaks, cardiac_freq_peaks_properties = find_significant_peaks(fft_band_data_cardiac, width=1, percentile=99)
 
+# After finding significant peaks for the breathing band
+breathing_peak_intervals, breathing_peak_rate_hz = estimate_peak_intervals(
+    best_breathing_freq_peaks, 
+    fft_band_data_breathing_freq, 
+    frameRate
+)
+
+# After finding significant peaks for the cardiac band
+cardiac_peak_intervals, cardiac_peak_rate_hz = estimate_peak_intervals(
+    best_cardiac_freq_peaks, 
+    fft_band_data_cardiac_freq, 
+    frameRate
+)
+
+# Convert rates from Hz to BPM and print them
+breathing_peak_rate_bpm = breathing_peak_rate_hz * 60
+cardiac_peak_rate_bpm = cardiac_peak_rate_hz * 60
+
+print(f"\nBreathing Peak Intervals: {breathing_peak_intervals}")
+print(f"Breathing Median Peak Rate: {breathing_peak_rate_bpm} BPM")
+
+print(f"\nCardiac Peak Intervals: {cardiac_peak_intervals}")
+print(f"Cardiac Median Peak Rate: {cardiac_peak_rate_bpm} BPM")
+
 # Select the peak with the highest significance score
 best_breathing_freq = select_best_peak(best_breathing_freq_peaks, breathing_freq_peaks_properties, fft_band_data_breathing_freq)
 best_cardiac_freq = select_best_peak(best_cardiac_freq_peaks, cardiac_freq_peaks_properties, fft_band_data_cardiac_freq)
 
-print(f"Best Breathing Frequency: {best_breathing_freq * 60} BPM")
-print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
+
+# print(f"Best Breathing Frequency: {best_breathing_freq * 60} BPM")
+# print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 
 # make a big subplot for all the plots
 fig, axs = plt.subplots(2, 4, figsize=(30, 8))
