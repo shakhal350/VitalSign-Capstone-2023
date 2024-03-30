@@ -100,8 +100,9 @@ filename_truth_HR = None
 # filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
 # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET\Joseph\1m_Data_face\DCA1000EVM_Joseph_15br_65_hr.csv"
 
-folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
-filename = pick_random_file_from_subfolders(folder_path)
+# folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
+# filename = pick_random_file_from_subfolders(folder_path)
+filename = r"C:\Users\Joseph\Downloads\1443_DATASET\EV\Grace\DCA1000EVM_normalbreathingat1m_11br_77hr.csv"
 if filename:
     print(f"Randomly selected file: {filename}")
 else:
@@ -260,7 +261,7 @@ fft_band_data_breathing, fft_band_data_breathing_freq = compute_fft(bandpass_che
 fft_band_data_cardiac, fft_band_data_cardiac_freq = compute_fft(bandpass_chest_displacement_HR, frameRate)
 
 best_breathing_freq_peaks, breathing_freq_peaks_properties = find_significant_peaks(fft_band_data_breathing, width=1, percentile=99)
-best_cardiac_freq_peaks, cardiac_freq_peaks_properties = find_significant_peaks(fft_band_data_cardiac, width=1, percentile=99)
+best_cardiac_freq_peaks, cardiac_freq_peaks_properties = find_significant_peaks(fft_band_data_cardiac, width=0.1, percentile=99.9)
 
 # Select the peak with the highest significance score
 best_breathing_freq = select_best_peak(best_breathing_freq_peaks, breathing_freq_peaks_properties, fft_band_data_breathing_freq)
