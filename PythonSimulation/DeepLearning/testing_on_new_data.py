@@ -59,8 +59,8 @@ def test_model(model_path, new_data_tensor, actual_hr_tensor):
     return predictions, actual_hr_np
 
 # Update usage
-model_path = r"C:\Concordia\Fall 2023\Capstone\VitalSign-Capstone-2023-1\PythonSimulation\MVN MODEL\vit_heart_rate_model_best_newest.pth"
-new_data_path = r"C:\Users\Grace\Downloads\phase_values_11_new.csv"
+model_path = r"filepath"
+new_data_path = r"filepath"
 new_data_tensor, actual_hr_tensor = prepare_new_data(new_data_path)
 predictions, actual_hr_np = test_model(model_path, new_data_tensor, actual_hr_tensor)
 
