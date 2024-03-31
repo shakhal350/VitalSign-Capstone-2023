@@ -34,3 +34,17 @@ def bandstop_filter(data, lowcut, highcut, fs, order=4):
     b, a = butter(order, [low, high], btype='bandstop')
     y = filtfilt(b, a, data)
     return y
+
+def gain_control_filter(data, threshold):
+    newData = np.append(data, data[-1])
+    x = np.reshape(newData, (-1, 20))
+    e = np.sum(x*x,-1)
+    
+    for i in range(e.size):
+        if e[i] > threshold:
+            for j in range(x[i].size):
+                x[i][j] = x[i][j] * np.sqrt(threshold / (e[i]))
+
+    z = np.ravel(x)
+    z = np.delete(z,-1)
+    return z
