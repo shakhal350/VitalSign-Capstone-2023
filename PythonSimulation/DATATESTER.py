@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import find_peaks
+from scipy.signal import find_peaks, savgol_filter
 
 import os
 import random
@@ -64,7 +64,7 @@ def compute_fft(time_signal, fRate):
 
 def find_significant_peaks(fft_data, prominence=0.1, width=1, percentile=95):
     # power spectral density (PSD)
-    fft_data = np.abs(fft_data)
+    fft_data = np.abs(fft_data) ** 2
     thresh = np.percentile(fft_data, percentile)
     p, prop = find_peaks(fft_data, prominence=prominence, width=width, height=thresh)
     return p, prop
@@ -81,7 +81,7 @@ def select_best_peak(p, prop, fft_freq):
     return best_peak_freq
 
 
-def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.3):
+def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.2):
     starting = max(best_peak_freq - window_gap, 0.1)
     ending = best_peak_freq + window_gap
     starting_index = np.where(fft_freq > starting)[0][0]  # Find the index of the frequency closest to the starting value
@@ -91,7 +91,7 @@ def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.3):
 
 start_time = 0
 sampleNumber = np.random.randint(1, 50)  # <-----*** Randomly picks a sample number *** MAKE SURE TO CHANGE THIS TO A SPECIFIC NUMBER IF YOU WANT TO TEST A SPECIFIC FILE
-# sampleNumber = 41
+sampleNumber = 42
 filename_truth_Br = None
 filename_truth_HR = None
 # filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
@@ -100,14 +100,13 @@ filename_truth_HR = None
 # filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
 # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET\Joseph\1m_Data_face\DCA1000EVM_Joseph_15br_65_hr.csv"
 
-# folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
-# filename = pick_random_file_from_subfolders(folder_path)
-filename = r"c:\Users\Joseph\Downloads\1443_DATASET\EV\Joseph\DCA1000EVM_normalbreathingat1m_12br_82hr.csv"
+folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
+filename = pick_random_file_from_subfolders(folder_path)
+# filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET\EV\Joseph\DCA1000EVM_normalbreathingat1m_14br_80hr.csv"
 if filename:
     print(f"Randomly selected file: {filename}")
 else:
     print("The folder and its subfolders are empty or do not contain any files.")
-
 
 data_Re, data_Im, radar_parameters = load_and_process_data(filename)
 frameRate = radar_parameters['frameRate']
@@ -128,7 +127,7 @@ data_Im_window = data_Im[start:end]
 filtered_data = data_Re_window + 1j * data_Im_window
 time_domain = np.linspace(start_time, start_time + window_time, filtered_data.shape[0])
 ######################################## FFT of the filtered data ########################################
-spectrum_detect = detect_person_by_svd(filtered_data, radar_parameters, 150)
+spectrum_detect = detect_person_by_svd(filtered_data, radar_parameters, 25)
 if spectrum_detect is not False:
     print("***Static noise Detected***")
     print(f":Static noise at {spectrum_detect} Hz")
@@ -210,6 +209,9 @@ unwrap_phase = np.unwrap(phase_values)
 polynomial_coefficients = np.polyfit(phase_time, unwrap_phase, 10)
 estimated_baseline = np.polyval(polynomial_coefficients, phase_time)
 corrected_phase = unwrap_phase - estimated_baseline
+# Apply Savitzky-Golay filter to smooth the corrected_phase
+window_length, poly_order = 51, 3  # Choose based on your data
+smoothed_phase = savgol_filter(corrected_phase, window_length, poly_order)
 
 ######################################## Cleaning the phase differences ########################################
 diff_unwrap_phase = np.diff(unwrap_phase)
@@ -235,6 +237,9 @@ if abs(forward_diff_first) > threshold:
 lambda_c = 3e8 / radar_parameters['startFreq']
 chest_displacement = ((lambda_c / (4 * np.pi)) * diff_unwrap_phase) * 1000  # in mm
 cleaned_chest_displacement = ((lambda_c / (4 * np.pi)) * cleaned_diff_unwrap_phase) * 1000  # in mm
+# Apply Savitzky-Golay filter to smooth the cleaned_chest_displacement
+window_length, poly_order = 51, 4  # Choose based on your data
+savgol_filter_chest_displacement = savgol_filter(cleaned_chest_displacement, window_length, poly_order)
 
 ######################################## Detecting Non-Breathing Periods ########################################
 # Detect whether the chest displacement is not moving (i.e. the person is not breathing)
@@ -252,7 +257,7 @@ if len(non_breathing_periods) > 0:
     print(f"Total duration of non-breathing periods: {np.sum([end - start for start, end in non_breathing_periods]):.2f} seconds")
 
 ######################################## FFT of the chest displacement ########################################
-fft_chest_displacement, fft_phase_freq = compute_fft(chest_displacement, frameRate)
+fft_chest_displacement, fft_phase_freq = compute_fft(savgol_filter_chest_displacement, frameRate)
 
 bandpass_chest_displacement_BR = bandpass_filter(cleaned_chest_displacement, 0.1, 0.8, frameRate, order=4)
 bandpass_chest_displacement_HR = bandpass_filter(cleaned_chest_displacement, 0.8, 4.0, frameRate, order=4)
@@ -293,15 +298,18 @@ axs[0, 2].set_title('Phase Values')
 axs[0, 2].set_xlabel('Time Domain')
 axs[0, 2].set_ylabel('Phase')
 
-axs[0, 3].plot(phase_time, unwrap_phase, label='Unwrapped Phase', color='r', linewidth=0.5)
-axs[0, 3].plot(phase_time, estimated_baseline, label='Estimated Baseline', color='b', linewidth=0.5)
+# axs[0, 3].plot(phase_time, unwrap_phase, label='Unwrapped Phase', color='r', linewidth=0.5)
+# axs[0, 3].plot(phase_time, estimated_baseline, label='Estimated Baseline', color='b', linewidth=0.5)
 axs[0, 3].plot(phase_time, corrected_phase, label='Baseline Corrected Phase', color='g', linewidth=1)
+axs[0, 3].plot(phase_time, smoothed_phase, label='Estimated Breathing Wave', color='purple', linewidth=1.5)
 axs[0, 3].set_title('Unwrapped Phase Values')
 axs[0, 3].set_xlabel('Time Domain')
 axs[0, 3].set_ylabel('Phase')
+axs[0, 3].legend()
 
-axs[1, 0].plot(phase_time[:-1], chest_displacement, "r")
-axs[1, 0].plot(phase_time[:-1], cleaned_chest_displacement, "g")
+# axs[1, 0].plot(phase_time[:-1], chest_displacement, "r", linewidth=0.5)
+axs[1, 0].plot(phase_time[:-1], savgol_filter_chest_displacement, "g", linewidth=0.5)
+axs[1, 0].plot(phase_time[:-1], cleaned_chest_displacement+1, "b", linewidth=0.5)
 axs[1, 0].set_title('Chest Displacement from Phase Differencing')
 axs[1, 0].set_xlabel('Time')
 axs[1, 0].set_ylabel('Chest Displacement (cm)')
