@@ -91,9 +91,9 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     file_paths = [
-    r"C:\Users\Grace\Downloads\phase_values_14.csv",
-    r"C:\Users\Grace\Downloads\phase_values_11_new.csv",
-    r"C:\Users\Grace\Downloads\phase_values_39.csv"   
+    r"filepath",
+    r"filepath",
+    r"filepath"   
     ]
     # Load and preprocess the data, then create datasets and data loaders
     X_train, X_test, y_train, y_test = load_and_preprocess_multiple_files(file_paths)
