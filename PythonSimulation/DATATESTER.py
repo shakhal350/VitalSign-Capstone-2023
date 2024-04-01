@@ -12,9 +12,9 @@ from data_processing import load_and_process_data
 from NotBreathing import detect_non_breathing_periods
 
 
-def pick_random_file_from_subfolders(folder_path):
+def pick_random_file_from_subfolders(fp):
     all_files = []
-    for root, dirs, files in os.walk(folder_path):
+    for root, dirs, files in os.walk(fp):
         for file in files:
             all_files.append(os.path.join(root, file))
 
@@ -127,13 +127,17 @@ data_Im_window = data_Im[start:end]
 filtered_data = data_Re_window + 1j * data_Im_window
 time_domain = np.linspace(start_time, start_time + window_time, filtered_data.shape[0])
 ######################################## FFT of the filtered data ########################################
-spectrum_detect = detect_person_by_svd(filtered_data, radar_parameters, 25)
+max_range_in_freq, spectrum_detect = detect_person_by_svd(filtered_data, radar_parameters, 25)
+data_Re_window = lowpass_filter(data_Re_window, max_range_in_freq, frameRate, order=4)
+data_Im_window = lowpass_filter(data_Im_window, max_range_in_freq, frameRate, order=4)
+filtered_data = data_Re_window + 1j * data_Im_window
 if spectrum_detect is not False:
     print("***Static noise Detected***")
     print(f":Static noise at {spectrum_detect} Hz")
-    bandpassgap = 0.1
-    data_Re_window = bandstop_filter(data_Re_window, spectrum_detect - bandpassgap, spectrum_detect + bandpassgap, frameRate, order=4)
-    data_Im_window = bandstop_filter(data_Im_window, spectrum_detect - bandpassgap, spectrum_detect + bandpassgap, frameRate, order=4)
+    bandpassgap = 0.05
+    for i in range(len(spectrum_detect)):
+        data_Re_window = bandstop_filter(data_Re_window, spectrum_detect[i] - bandpassgap, spectrum_detect[i] + bandpassgap, frameRate, order=4)
+        data_Im_window = bandstop_filter(data_Im_window, spectrum_detect[i] - bandpassgap, spectrum_detect[i] + bandpassgap, frameRate, order=4)
     filtered_data = data_Re_window + 1j * data_Im_window
 else:
     print("***No Static noise Detected***")
@@ -158,8 +162,8 @@ print(f"Window Start Frequency: {window_start_peak} Hz, Window End Frequency: {w
 data_Re_window = bandpass_filter(filtered_data, window_start_peak, window_end_peak, frameRate, order=4)
 data_Im_window = bandpass_filter(filtered_data, window_start_peak, window_end_peak, frameRate, order=4)
 
-data_Re_window = SVD_Matrix(np.real(data_Re_window), radar_parameters, 10)
-data_Im_window = SVD_Matrix(np.imag(data_Im_window), radar_parameters, 10)
+data_Re_window = SVD_Matrix(np.real(data_Re_window), radar_parameters, 120)
+data_Im_window = SVD_Matrix(np.imag(data_Im_window), radar_parameters, 120)
 
 ######################################## Phase and Unwrapped Phase Processing ########################################
 phase_values = []
@@ -216,7 +220,7 @@ smoothed_phase = savgol_filter(corrected_phase, window_length, poly_order)
 ######################################## Cleaning the phase differences ########################################
 diff_unwrap_phase = np.diff(unwrap_phase)
 # Assuming diff_unwrap_phase is your unwrapped differential phase array
-threshold = np.std(diff_unwrap_phase) * 2  # Example threshold: 2 times the standard deviation
+threshold = np.std(diff_unwrap_phase) * 1.5  # Example threshold: 2 times the standard deviation
 # Initialize an array to hold the cleaned phase differences
 cleaned_diff_unwrap_phase = np.copy(diff_unwrap_phase)
 for m in range(1, len(diff_unwrap_phase) - 1):  # Skip the first and last elements for now
@@ -238,14 +242,15 @@ lambda_c = 3e8 / radar_parameters['startFreq']
 chest_displacement = ((lambda_c / (4 * np.pi)) * diff_unwrap_phase) * 1000  # in mm
 cleaned_chest_displacement = ((lambda_c / (4 * np.pi)) * cleaned_diff_unwrap_phase) * 1000  # in mm
 # Apply Savitzky-Golay filter to smooth the cleaned_chest_displacement
-window_length, poly_order = 51, 4  # Choose based on your data
+window_length, poly_order = 21, 4  # Choose based on your data
 savgol_filter_chest_displacement = savgol_filter(cleaned_chest_displacement, window_length, poly_order)
 
 ######################################## Detecting Non-Breathing Periods ########################################
 # Detect whether the chest displacement is not moving (i.e. the person is not breathing)
 # Apply the function
-non_breathing_periods = detect_non_breathing_periods(unwrap_phase, frameRate, 4, 1.5)
+non_breathing_periods = detect_non_breathing_periods(savgol_filter_chest_displacement, frameRate, 5, 0.2)
 # Print the results
+total_duration_no_BR = 0
 if len(non_breathing_periods) == 0:
     print("No non-breathing periods detected.")
 else:
@@ -254,10 +259,11 @@ for start, end in non_breathing_periods:
     duration = end - start
     print(f"From {start:.2f} to {end:.2f} seconds, duration: {duration:.2f} seconds")
 if len(non_breathing_periods) > 0:
-    print(f"Total duration of non-breathing periods: {np.sum([end - start for start, end in non_breathing_periods]):.2f} seconds")
+    total_duration_no_BR = np.sum([end - start for start, end in non_breathing_periods])
+    print(f"Total duration of non-breathing periods: {total_duration_no_BR:.2f} seconds")
 
 ######################################## FFT of the chest displacement ########################################
-fft_chest_displacement, fft_phase_freq = compute_fft(savgol_filter_chest_displacement, frameRate)
+fft_chest_displacement, fft_phase_freq = compute_fft(cleaned_chest_displacement, frameRate)
 
 bandpass_chest_displacement_BR = bandpass_filter(cleaned_chest_displacement, 0.1, 0.8, frameRate, order=4)
 bandpass_chest_displacement_HR = bandpass_filter(cleaned_chest_displacement, 0.8, 4.0, frameRate, order=4)
@@ -278,7 +284,7 @@ print(f"Best Cardiac Frequency: {best_cardiac_freq * 60} BPM")
 # make a big subplot for all the plots
 fig, axs = plt.subplots(2, 4, figsize=(30, 8))
 fig.suptitle('All the plots for file: ' + filename)
-axs[0, 0].imshow(spectrogram_array, aspect='auto', origin='lower', extent=[fft_freq_frame[0], fft_freq_frame[-1], 0, len(spectrogram_data)])
+axs[0, 0].imshow(spectrogram_array, aspect='auto', origin='lower', extent=[fft_freq_frame[0], max_range_in_freq, 0, len(spectrogram_data)])
 axs[0, 0].set_title('Spectrogram of All Chirps')
 axs[0, 0].set_xlabel('Frequency (Hz)')
 axs[0, 0].set_ylabel('Chirp Number')
@@ -308,8 +314,8 @@ axs[0, 3].set_ylabel('Phase')
 axs[0, 3].legend()
 
 # axs[1, 0].plot(phase_time[:-1], chest_displacement, "r", linewidth=0.5)
-axs[1, 0].plot(phase_time[:-1], savgol_filter_chest_displacement, "g", linewidth=0.5)
-axs[1, 0].plot(phase_time[:-1], cleaned_chest_displacement+1, "b", linewidth=0.5)
+axs[1, 0].plot(phase_time[:-1], savgol_filter_chest_displacement, "g", linewidth=0.5, label='Smoothened Chest Displacement')
+axs[1, 0].plot(phase_time[:-1], cleaned_chest_displacement + 1, "b", linewidth=0.5, label='Raw Chest Displacement')
 axs[1, 0].set_title('Chest Displacement from Phase Differencing')
 axs[1, 0].set_xlabel('Time')
 axs[1, 0].set_ylabel('Chest Displacement (cm)')
@@ -321,7 +327,9 @@ axs[1, 1].set_ylabel('Magnitude')
 
 axs[1, 2].plot(fft_band_data_breathing_freq * 60, np.abs(fft_band_data_breathing))
 axs[1, 2].axvline(x=best_breathing_freq * 60, color='g', linestyle='dotted', label='Breathing Frequency', linewidth=2)
-axs[1, 2].annotate('Breathing BPM = %.2f' % (best_breathing_freq * 60), xy=(0.20, 0.90), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
+if total_duration_no_BR > 5:
+    axs[1, 2].annotate('Warning, No Breathing detected = %.2f Seconds' % total_duration_no_BR, xy=(0.20, 0.70), xycoords='axes fraction', color='red', fontsize=10, weight='bold')
+axs[1, 2].annotate('Breathing BPM = %.2f' % (best_breathing_freq * 60), xy=(0.20, 0.80), xycoords='axes fraction', color='green', fontsize=10, weight='bold')
 axs[1, 2].set_title('Breathing Region Filtered Data')
 axs[1, 2].set_xlabel('Frequency (BPM)')
 axs[1, 2].set_ylabel('Magnitude')

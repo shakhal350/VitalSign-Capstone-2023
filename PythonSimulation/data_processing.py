@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
-from BeamFormer import mvdr_beamforming
+from BeamFormer import apply_weights
 
 
 def load_and_process_data(filename):
@@ -11,10 +10,11 @@ def load_and_process_data(filename):
         data = pd.read_csv(filename, header=None)
         for col in data.columns:
             data[col] = data[col].apply(lambda x: complex(x.replace('i', 'j')))
-        data = np.array(data)
-        data = mvdr_beamforming(data, np.array([1, 2, 2, 1]))
-        data_real = np.real(data)
-        data_imag = np.imag(data)
+
+        weighted_data = apply_weights(data)
+        print(weighted_data.shape)
+        data_real = np.real(weighted_data)
+        data_imag = np.imag(weighted_data)
         return data_real, data_imag, get_radar_parameters("Children Dataset")
 
     # For VitalSign Dataset from Github
@@ -22,10 +22,13 @@ def load_and_process_data(filename):
         data = pd.read_csv(filename, header=None, skiprows=1)
         for col in data.columns:
             data[col] = data[col].apply(lambda x: complex(x))
-        data = np.array(data)
-        data = mvdr_beamforming(data, np.array([1, 2, 2, 1]))
-        data_real = np.real(data)
-        data_imag = np.imag(data)
+
+        weighted_data = apply_weights(data)
+        print(weighted_data.shape)
+        combined_data = np.sum(weighted_data, axis=1)
+        print(combined_data.shape)
+        data_real = np.real(combined_data)
+        data_imag = np.imag(combined_data)
         return data_real, data_imag, get_radar_parameters("DCA1000EVM")
 
 
