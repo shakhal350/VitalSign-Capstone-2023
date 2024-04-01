@@ -105,7 +105,8 @@ def getPlots(option, filename):
 
     # folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
     # filename = pick_random_file_from_subfolders(folder_path)
-    filename = r"c:\Users\Joseph\Downloads\1443_DATASET\EV\Joseph\DCA1000EVM_normalbreathingat1m_12br_82hr.csv"
+    # filename = r"c:\Users\Joseph\Downloads\1443_DATASET\EV\Joseph\DCA1000EVM_normalbreathingat1m_12br_82hr.csv"
+
     if filename:
         print(f"Randomly selected file: {filename}")
     else:
@@ -271,7 +272,7 @@ def getPlots(option, filename):
     fft_chest_displacement, fft_phase_freq = compute_fft(cleaned_chest_displacement, frameRate)
 
     bandpass_chest_displacement_BR = bandpass_filter(cleaned_chest_displacement, 0.1, 0.8, frameRate, order=4)
-    bandpass_chest_displacement_HR = bandpass_filter(gain_control_chest_displacement, 0.8, 4.0, frameRate, order=4)
+    bandpass_chest_displacement_HR = bandpass_filter(gain_control_chest_displacement, 0.8, 2.0, frameRate, order=4)
 
     fft_band_data_breathing, fft_band_data_breathing_freq = compute_fft(bandpass_chest_displacement_BR, frameRate)
     fft_band_data_cardiac, fft_band_data_cardiac_freq = compute_fft(bandpass_chest_displacement_HR, frameRate)
@@ -304,8 +305,8 @@ def getPlots(option, filename):
         axs[1].set_ylabel('Magnitude')
 
         plt.tight_layout()
-        plt.show()
-        print("done")
+        # plt.show()
+        # print("done")
         return fig, axs, best_breathing_freq * 60, best_cardiac_freq * 60
 
 
@@ -393,8 +394,8 @@ def getPlots(option, filename):
             axs_GT[1].annotate('Average HR = %.2f' % average_HR, xy=(0.30, 0.85), xycoords='axes fraction', color='red', fontsize=14, weight='bold')
 
         plt.tight_layout()
-        plt.show()
-        print("done")
+        # plt.show()
+        # print("done")
         return fig, axs, best_breathing_freq * 60, best_cardiac_freq * 60
 
 if __name__ == "__main__":

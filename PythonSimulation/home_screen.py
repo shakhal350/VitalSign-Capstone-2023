@@ -180,12 +180,13 @@ class VitalSignsGUI:
             "Arial", 14), state="disabled")
         sex_entry = ttk.OptionMenu(
             self.settings_frame, self.userGender, *options)
+        sex_entry.configure(state="disabled")
         weight_entry = ttk.Entry(self.settings_frame, textvariable=self.userWeight, font=(
             "Arial", 14), state="disabled")
         height_entry = ttk.Entry(self.settings_frame, textvariable=self.userHeight, font=(
             "Arial", 14), state="disabled")
 
-        self.readValues(age_entry, sex_entry, weight_entry, height_entry)
+        self.readValues()
 
         age_label.grid(row=0, column=0, sticky="w")
         sex_label.grid(row=1, column=0, sticky="w")
@@ -202,28 +203,31 @@ class VitalSignsGUI:
         go_back_button.grid(row=0, column=2, columnspan=2)
 
         save_button = ttk.Button(self.settings_frame, text="Save", command=lambda: self.save(
-            age_entry, weight_entry, height_entry))
+            age_entry, sex_entry, weight_entry, height_entry))
 
         save_button.grid(row=1, column=2, columnspan=2)
 
         edit_button = ttk.Button(self.settings_frame, text="Edit", command=lambda: self.edit(
-            age_entry, weight_entry, height_entry))
+            age_entry, sex_entry, weight_entry, height_entry))
         edit_button.grid(row=2, column=2, columnspan=2)
 
         back_home_button = ttk.Button(
             self.settings_frame, text="Back Home", command=self.splashScreen)
         back_home_button.grid(row=3, column=2, columnspan=2)
 
-    def readValues(self, age_entry, sex_entry, weight_entry, height_entry):
+    def readValues(self):
         with open("settingsinfo.csv", "r") as csvfile:
             reader = csv.reader(csvfile)
             count = 0
             for row in reader:
                 if count == 2:
                     self.userAge.set(row[0])
+                    self.userGender.set(row[1])
+                    self.userWeight.set(row[2])
+                    self.userHeight.set(row[3])
                 count = count + 1
 
-    def save(self, age_entry, weight_entry, height_entry):
+    def save(self, age_entry, sex_entry, weight_entry, height_entry):
 
         fields = ["Age", "Sex", "Weight", "Height"]
         values = [age_entry.get(), self.userGender.get(),
@@ -235,11 +239,13 @@ class VitalSignsGUI:
             writer.writerow(values)
 
         age_entry.config(state="disabled")
+        sex_entry.configure(state="disabled")
         weight_entry.config(state="disabled")
         height_entry.config(state="disabled")
 
-    def edit(self, age_entry, weight_entry, height_entry):
+    def edit(self, age_entry, sex_entry, weight_entry, height_entry):
         age_entry.config(state="enabled")
+        sex_entry.configure(state="enabled")
         weight_entry.config(state="enabled")
         height_entry.config(state="enabled")
 
