@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import find_peaks
+from scipy.signal import find_peaks, savgol_filter
 
 import os
 import random
@@ -12,9 +12,9 @@ from data_processing import load_and_process_data
 from NotBreathing import detect_non_breathing_periods
 
 
-def pick_random_file_from_subfolders(folder_path):
+def pick_random_file_from_subfolders(fp):
     all_files = []
-    for root, dirs, files in os.walk(folder_path):
+    for root, dirs, files in os.walk(fp):
         for file in files:
             all_files.append(os.path.join(root, file))
 
@@ -64,7 +64,7 @@ def compute_fft(time_signal, fRate):
 
 def find_significant_peaks(fft_data, prominence=0.1, width=1, percentile=95):
     # power spectral density (PSD)
-    fft_data = np.abs(fft_data)
+    fft_data = np.abs(fft_data) ** 2
     thresh = np.percentile(fft_data, percentile)
     p, prop = find_peaks(fft_data, prominence=prominence, width=width, height=thresh)
     return p, prop
@@ -81,7 +81,7 @@ def select_best_peak(p, prop, fft_freq):
     return best_peak_freq
 
 
-def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.3):
+def determine_frequency_window(best_peak_freq, fft_freq, window_gap=0.2):
     starting = max(best_peak_freq - window_gap, 0.1)
     ending = best_peak_freq + window_gap
     starting_index = np.where(fft_freq > starting)[0][0]  # Find the index of the frequency closest to the starting value
@@ -96,8 +96,16 @@ def getPlots(option, filename):
     filename_truth_Br = None
     filename_truth_HR = None
 
-# filename = "DCA1000EVM_normalbreathingat1m_12br_82hr.csv"
+    # filename = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Rawdata\Transposed_Rawdata\Transposed_Rawdata_' + str(sampleNumber) + '.csv'
+    # filename_truth_Br = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Breath_' + str(sampleNumber) + '.csv'
+    # filename_truth_HR = r'C:\Users\Shaya\Documents\MATLAB\CAPSTONE DATASET\CAPSTONE DATASET\Children Dataset\FMCW Radar\Heart Rate & Breathing Rate\Heart_' + str(sampleNumber) + '.csv'
+    # filename = r"..\\PythonSimulation\\Dataset\\DCA1000EVM_Shayan_19Br_100Hr.csv"
+    # filename = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET\Joseph\1m_Data_face\DCA1000EVM_Joseph_15br_65_hr.csv"
 
+
+    # folder_path = r"C:\Users\Shaya\OneDrive - Concordia University - Canada\UNIVERSITY\CAPSTONE\Our Datasets (DCA1000EVM)\1443_DATASET"
+    # filename = pick_random_file_from_subfolders(folder_path)
+    filename = r"c:\Users\Joseph\Downloads\1443_DATASET\EV\Joseph\DCA1000EVM_normalbreathingat1m_12br_82hr.csv"
     if filename:
         print(f"Randomly selected file: {filename}")
     else:
@@ -123,13 +131,17 @@ def getPlots(option, filename):
     filtered_data = data_Re_window + 1j * data_Im_window
     time_domain = np.linspace(start_time, start_time + window_time, filtered_data.shape[0])
     ######################################## FFT of the filtered data ########################################
-    spectrum_detect = detect_person_by_svd(filtered_data, radar_parameters, 150)
+    max_range_in_freq, spectrum_detect = detect_person_by_svd(filtered_data, radar_parameters, 25)
+    data_Re_window = lowpass_filter(data_Re_window, max_range_in_freq, frameRate, order=4)
+    data_Im_window = lowpass_filter(data_Im_window, max_range_in_freq, frameRate, order=4)
+    filtered_data = data_Re_window + 1j * data_Im_window
     if spectrum_detect is not False:
         print("***Static noise Detected***")
         print(f":Static noise at {spectrum_detect} Hz")
-        bandpassgap = 0.1
-        data_Re_window = bandstop_filter(data_Re_window, spectrum_detect - bandpassgap, spectrum_detect + bandpassgap, frameRate, order=4)
-        data_Im_window = bandstop_filter(data_Im_window, spectrum_detect - bandpassgap, spectrum_detect + bandpassgap, frameRate, order=4)
+        bandpassgap = 0.05
+        for i in range(len(spectrum_detect)):
+            data_Re_window = bandstop_filter(data_Re_window, spectrum_detect[i] - bandpassgap, spectrum_detect[i] + bandpassgap, frameRate, order=4)
+            data_Im_window = bandstop_filter(data_Im_window, spectrum_detect[i] - bandpassgap, spectrum_detect[i] + bandpassgap, frameRate, order=4)
         filtered_data = data_Re_window + 1j * data_Im_window
     else:
         print("***No Static noise Detected***")
@@ -205,11 +217,14 @@ def getPlots(option, filename):
     polynomial_coefficients = np.polyfit(phase_time, unwrap_phase, 10)
     estimated_baseline = np.polyval(polynomial_coefficients, phase_time)
     corrected_phase = unwrap_phase - estimated_baseline
+    # Apply Savitzky-Golay filter to smooth the corrected_phase
+    window_length, poly_order = 51, 3  # Choose based on your data
+    smoothed_phase = savgol_filter(corrected_phase, window_length, poly_order)
 
     ######################################## Cleaning the phase differences ########################################
     diff_unwrap_phase = np.diff(unwrap_phase)
     # Assuming diff_unwrap_phase is your unwrapped differential phase array
-    threshold = np.std(diff_unwrap_phase) * 2  # Example threshold: 2 times the standard deviation
+    threshold = np.std(diff_unwrap_phase) * 1.5  # Example threshold: 2 times the standard deviation
     # Initialize an array to hold the cleaned phase differences
     cleaned_diff_unwrap_phase = np.copy(diff_unwrap_phase)
     for m in range(1, len(diff_unwrap_phase) - 1):  # Skip the first and last elements for now
@@ -231,12 +246,16 @@ def getPlots(option, filename):
     chest_displacement = ((lambda_c / (4 * np.pi)) * diff_unwrap_phase) * 1000  # in mm
     cleaned_chest_displacement = ((lambda_c / (4 * np.pi)) * cleaned_diff_unwrap_phase) * 1000  # in mm
     gain_control_chest_displacement = gain_control_filter(cleaned_chest_displacement, 0.35)
+    # Apply Savitzky-Golay filter to smooth the cleaned_chest_displacement
+    window_length, poly_order = 21, 4  # Choose based on your data
+    savgol_filter_chest_displacement = savgol_filter(cleaned_chest_displacement, window_length, poly_order)
 
     ######################################## Detecting Non-Breathing Periods ########################################
     # Detect whether the chest displacement is not moving (i.e. the person is not breathing)
     # Apply the function
-    non_breathing_periods = detect_non_breathing_periods(unwrap_phase, frameRate, 4, 1.5)
+    non_breathing_periods = detect_non_breathing_periods(savgol_filter_chest_displacement, frameRate, 5, 0.2)
     # Print the results
+    total_duration_no_BR = 0
     if len(non_breathing_periods) == 0:
         print("No non-breathing periods detected.")
     else:
@@ -245,10 +264,11 @@ def getPlots(option, filename):
         duration = end - start
         print(f"From {start:.2f} to {end:.2f} seconds, duration: {duration:.2f} seconds")
     if len(non_breathing_periods) > 0:
-        print(f"Total duration of non-breathing periods: {np.sum([end - start for start, end in non_breathing_periods]):.2f} seconds")
+        total_duration_no_BR = np.sum([end - start for start, end in non_breathing_periods])
+        print(f"Total duration of non-breathing periods: {total_duration_no_BR:.2f} seconds")
 
     ######################################## FFT of the chest displacement ########################################
-    fft_chest_displacement, fft_phase_freq = compute_fft(chest_displacement, frameRate)
+    fft_chest_displacement, fft_phase_freq = compute_fft(cleaned_chest_displacement, frameRate)
 
     bandpass_chest_displacement_BR = bandpass_filter(cleaned_chest_displacement, 0.1, 0.8, frameRate, order=4)
     bandpass_chest_displacement_HR = bandpass_filter(gain_control_chest_displacement, 0.8, 4.0, frameRate, order=4)

@@ -86,14 +86,15 @@ def analyze_static_variance(spectrogram_array, time_bins, range_bins, radar_para
     # plt.show()
 
     # Check through the count array for evidence of a static object
-    static_location = None
+    static_location_list = []
     for i in range(len(count_array_s)):
         if count_array_s[i] > 0.1 * spectrogram_array.shape[0]:
-            static_location = i
-            break
+            static_location_list.append(i)
 
-    print("static_location: ", static_location)
-    return static_location
+    max_range = len(count_array_s)
+
+    print("static_location: ", static_location_list)
+    return max_range, static_location_list
 
 
 def detect_person_by_svd(data, radar_parameters, svd_components):
@@ -104,15 +105,15 @@ def detect_person_by_svd(data, radar_parameters, svd_components):
     # Convert the reduced data to a spectrogram
     spectrogram_array, time_bins, range_bins, fft_freq = fft_spectrogram(noise_reduced_data, radar_parameters)
     # Logic to analyze variation in magnitude over 5 seconds
-    static_location = analyze_static_variance(spectrogram_array, time_bins, range_bins, radar_parameters)
-    if static_location is None:
-        return False
+    max_range, static_location_list = analyze_static_variance(spectrogram_array, time_bins, range_bins, radar_parameters)
+    max_range = fft_freq[max_range]
+    if len(static_location_list) == 0:
+        return max_range, False
     else:
-        freq_location_index = fft_freq[static_location]
-        print("freq_location_index: ", freq_location_index)
-        return freq_location_index
-
-
+        for i in range(len(static_location_list)):
+            static_location_list[i] = fft_freq[static_location_list[i]]
+        print("freq_location_index: ", static_location_list)
+        return max_range, static_location_list
 
 
 def fft_spectrogram(data, radar_parameters):
