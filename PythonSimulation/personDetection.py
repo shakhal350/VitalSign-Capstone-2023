@@ -69,21 +69,21 @@ def analyze_static_variance(spectrogram_array, time_bins, range_bins, radar_para
                 static_array[time_frame, freq_bin] = True
 
     # Plot results
-    fig, ax = plt.subplots(2, 1, figsize=(10, 6))
-    # For static_array visualization
-    ax[0].pcolormesh(range_bins, time_bins, variance_array, cmap='hot', shading='flat')
-    ax[1].pcolormesh(range_bins, time_bins, static_array, shading='flat')
-
-    ax[0].set_title('Variance Detection')
-    ax[0].set_xlabel('Frequency Bin')
-    ax[0].set_ylabel('Time Frame')
-
-    ax[1].set_title('Static Object Detection')
-    ax[1].set_xlabel('Frequency Bin')
-    ax[1].set_ylabel('Time Frame')
-
-    plt.tight_layout()
-    plt.show()
+    # fig, ax = plt.subplots(2, 1, figsize=(10, 6))
+    # # For static_array visualization
+    # ax[0].pcolormesh(range_bins, time_bins, variance_array, cmap='hot', shading='flat')
+    # ax[1].pcolormesh(range_bins, time_bins, static_array, shading='flat')
+    #
+    # ax[0].set_title('Variance Detection')
+    # ax[0].set_xlabel('Frequency Bin')
+    # ax[0].set_ylabel('Time Frame')
+    #
+    # ax[1].set_title('Static Object Detection')
+    # ax[1].set_xlabel('Frequency Bin')
+    # ax[1].set_ylabel('Time Frame')
+    #
+    # plt.tight_layout()
+    # plt.show()
 
     # Check through the count array for evidence of a static object
     static_location = None
@@ -147,12 +147,12 @@ def fft_spectrogram(data, radar_parameters):
     spectrogram_array = spectrogram_array[:, :cut_index]
 
     # Plot spectrogram with range axis
-    plt.figure(figsize=(20, 8))
-    plt.pcolormesh(range_bins, time_bins, spectrogram_array, shading='auto')
-    plt.colorbar(label='Magnitude')
-    plt.xlabel('Range (m)')
-    plt.ylabel('Time (s)')
-    plt.title('Spectrogram')
-    plt.show()
+    # plt.figure(figsize=(20, 8))
+    # plt.pcolormesh(range_bins, time_bins, spectrogram_array, shading='auto')
+    # plt.colorbar(label='Magnitude')
+    # plt.xlabel('Range (m)')
+    # plt.ylabel('Time (s)')
+    # plt.title('Spectrogram')
+    # plt.show()
 
     return spectrogram_array, time_bins, range_bins, fft_freq

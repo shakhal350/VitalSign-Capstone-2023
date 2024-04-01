@@ -1,4 +1,5 @@
 from scipy.signal import butter, filtfilt, lfilter, iirnotch
+import numpy as np
 
 
 def lowpass_filter(data, cutoff, fs, order=4):
