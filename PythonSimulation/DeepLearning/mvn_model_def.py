@@ -33,30 +33,23 @@ class MAEModel(nn.Module):
 
 
     def forward(self, x):
-        if x.dim() == 2:  # if shape is [batch_size, seq_len]
-            x = x.unsqueeze(-1)  # Add feature dimension: [batch_size, seq_len, 1]
-        x = self.embedding(x)  # [batch_size, seq_len, feature_dim]
+        if x.dim() == 2:  
+            x = x.unsqueeze(-1)  
+        x = self.embedding(x)  
 
-        # Dynamically resize positional embeddings to match the current sequence length
-        seq_len = x.size(1)  # Current sequence length for the batch
-        # Ensure positional embeddings cover the sequence length, reuse existing embeddings if longer
+        seq_len = x.size(1)  
         if self.encoder_positional.size(1) < seq_len:
-            # Extend positional embeddings if needed (rare case, depending on data preprocessing)
             needed_size = seq_len - self.encoder_positional.size(1)
             extended_pos = self.encoder_positional[:, :needed_size, :].repeat(1, math.ceil(seq_len / self.encoder_positional.size(1)), 1)
             self.encoder_positional = torch.cat([self.encoder_positional, extended_pos[:, :needed_size, :]], dim=1)
         current_encoder_positional = self.encoder_positional[:, :seq_len, :]
 
-        # Proceed with encoding
         x = x.permute(1, 0, 2)  # Adjust for transformer which expects [seq_len, batch_size, feature_dim]
         encoded = self.encoder(x)
 
-        # Assuming you want to decode or process further...
         decoded = self.decoder(encoded)
         # applying a final linear layer to predict heart rate:
         output = self.decoder_linear(decoded.permute(1, 0, 2))
-
-        # output shape would be [batch_size, num_windows, 1], matching your requirement
 
         return output
 
